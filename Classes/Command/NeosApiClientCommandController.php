@@ -9,25 +9,28 @@ use Sandstorm\NeosApiClient\NeosApiClient;
 
 class NeosApiClientCommandController extends CommandController
 {
-    public function embeddedContentModuleCommand() {
+    public function embeddedContentModuleCommand(string $user) {
         $neos = NeosApiClient::create('http://127.0.0.1:8081', 'secret');
         //$neos->ping();
-        // Einfachster Use Case: Neos öffnen mit existierendem Uswer
-        echo $neos->ui->contentEditing(userName: 'foo')
+        $this->outputLine('Einfachster Use Case: Neos öffnen mit existierendem Uswer');
+        echo $neos->ui->contentEditing(userName: $user)
             ->buildUri();
 
         echo "\n\n";
 
-        // Szenario: User ggf. anlegen; mit Zielworkspace-Override
-        $neos->ui->contentEditing(
-            user: NeosUser::createIfNotExisting('foo')
+
+        $this->outputLine('// Szenario: User ggf. anlegen; mit Zielworkspace-Override');
+        echo $neos->ui->contentEditing(
+            userName: $user
         )
-            ->publishInto(workspace: 'review')
+            ->publishInto(workspace: 'live')
             ->buildUri();
+
+        echo "\n\n";
 
         // Szenario: zu bestimmten Produkt-Node springen (user sieht aber weiterhin alles)
         $neos->ui->contentEditing(
-            user: NeosUser::createIfNotExisting('foo')
+            userName: NeosUser::createIfNotExisting('foo')
         )
             ->node('product-foo') # node ID
             ->buildUri();

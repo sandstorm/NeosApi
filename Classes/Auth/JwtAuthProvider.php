@@ -86,11 +86,7 @@ class JwtAuthProvider extends AbstractProvider
             $jwt = $credentials['jwt'];
             $key = 'secret'; // TODO: DO NOT HARDCODE!!!
             $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
-            /*foreach ($decoded->neos_cmd as $command) {
-                $className = $command->command;
-                $command = $className::fromStdClass($command);
-                assert($command instanceof LoginCommandInterface);
-            }*/
+
             $userName = $decoded->sub;
 
             $user = $this->userService->getUser($userName, 'Sandstorm.NeosApi');
