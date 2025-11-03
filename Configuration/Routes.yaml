@@ -1,0 +1,10 @@
+##
+# Backend
+
+- name: 'Backend'
+  uriPattern: 'api/embeddedBackend/open'
+  defaults:
+    '@package': 'Sandstorm.NeosApi'
+    '@controller': 'EmbeddedBackendApi'
+    '@action': 'open'
+    '@format': 'html'

@@ -1,0 +1,16 @@
+{
+    "description": "A way to embed Neos into other applications",
+    "type": "neos-package",
+    "name": "sandstorm/neosapi",
+    "license": "MIT",
+    "require": {
+        "php": "^8.4",
+        "neos/neos": "^9",
+        "sandstorm/neosapiclient": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sandstorm\\NeosApi\\": "Classes/"
+        }
+    }
+}

@@ -1,0 +1,20 @@
+Neos:
+  Flow:
+#    security:
+#      authentication:
+#        providers:
+#          'Neos.Neos:Backend':
+#            requestPatterns:
+#              'Neos.Neos.Ui:BackendControllers':
+#                pattern: ControllerObjectName
+#                patternOptions:
+#                  controllerObjectNamePattern: 'Neos\Neos\Ui\Controller\.*'
+    security:
+      authentication:
+        providers:
+          JwtAuthProvider:
+            provider: Sandstorm\NeosApi\Auth\JwtAuthProvider
+    mvc:
+      routes:
+        'Sandstorm.NeosApi': {}
+          #position: 'before Neos.Neos'

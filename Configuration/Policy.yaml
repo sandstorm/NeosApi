@@ -1,0 +1,13 @@
+privilegeTargets:
+  'Neos\Flow\Security\Authorization\Privilege\Method\MethodPrivilege':
+
+    'Sandstorm.NeosApi:EmbeddedBackendApi':
+      label: 'Access to the chat API endpoint'
+      matcher: 'method(Sandstorm\NeosApi\Controller\EmbeddedBackendApiController->openAction())'
+
+roles:
+  'Neos.Neos:AbstractEditor':
+    privileges:
+      -
+        privilegeTarget: 'Sandstorm.NeosApi:EmbeddedBackendApi'
+        permission: GRANT
