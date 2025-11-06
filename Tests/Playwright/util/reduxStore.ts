@@ -47,3 +47,9 @@ export async function getLoggedInUserName(page: Page): Promise<string | undefine
   return state?.user?.name?.fullName;
 }
 
+export async function getCurrentBaseWorkspace(page: Page): Promise<string | undefined> {
+  const state = await getReduxState(page);
+  // see Neos.Neos.Ui/packages/neos-ui-redux-store/src/CR/Workspaces/selectors.ts
+  return state?.cr?.workspaces?.personalWorkspace?.baseWorkspace
+}
+
