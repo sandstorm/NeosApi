@@ -53,3 +53,14 @@ export async function getCurrentBaseWorkspace(page: Page): Promise<string | unde
   return state?.cr?.workspaces?.personalWorkspace?.baseWorkspace
 }
 
+export async function getCurrentDimensionValue(page: Page, dimension): Promise<string | undefined> {
+  const state = await getReduxState(page);
+  // see Neos.Neos.Ui/packages/neos-ui-redux-store/src/CR/ContentDimensions/index.ts
+  return state?.cr?.contentDimensions.active[dimension][0];
+}
+
+export async function getCurrentNodeAggregateId(page: Page): Promise<string | undefined> {
+  const state = await getReduxState(page);
+  // see Neos.Neos.Ui/packages/neos-ui-redux-store/src/CR/Nodes/selectors.ts
+  return state?.cr?.nodes?.byContextPath[state?.cr?.nodes?.documentNode].identifier;
+}

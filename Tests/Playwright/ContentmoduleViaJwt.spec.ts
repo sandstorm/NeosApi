@@ -1,6 +1,12 @@
 import { test, expect } from '@playwright/test';
 import { execSync } from 'node:child_process';
-import {getCurrentBaseWorkspace, getLoggedInUserName, makeReduxStoreAccessibleForTesting} from "./util/reduxStore";
+import {
+  getCurrentBaseWorkspace,
+  getCurrentDimensionValue,
+  getCurrentNodeAggregateId,
+  getLoggedInUserName,
+  makeReduxStoreAccessibleForTesting
+} from "./util/reduxStore";
 
 function flow(command: string) {
   console.log("=== FLOW === " + command)
@@ -50,4 +56,32 @@ test('Log in via JWT can switch base workspace', async ({ page }) => {
   // we can switch back to live workspace
   await page.goto(jwtLiveWs);
   expect(await getCurrentBaseWorkspace(page)).toBe('live');
+});
+
+test('Log in via JWT can switch dimension', async ({ page }) => {
+  console.log(flow('sandstorm.neosapi:testingHelper:removeUserIfExists test-4'));
+
+  const jwtDimensionLanguageDe = flow('sandstorm.neosapi:testingHelper:contentEditingUriWithSwitchDimension --user test-4 --dimension language:de');
+  const jwtDimensionLanguageEnUk = flow('sandstorm.neosapi:testingHelper:contentEditingUriWithSwitchDimension --user test-4 --dimension language:en_UK');
+
+  await page.goto(jwtDimensionLanguageDe);
+  expect(await getCurrentDimensionValue(page, 'language')).toBe('de');
+
+  // we can switch back to live workspace
+  await page.goto(jwtDimensionLanguageEnUk);
+  expect(await getCurrentDimensionValue(page, 'language')).toBe('en_UK');
+});
+
+test('Log in via JWT can select edited node', async ({ page }) => {
+  console.log(flow('sandstorm.neosapi:testingHelper:removeUserIfExists test-5'));
+
+  const jwtNodeTextAndImages = flow('sandstorm.neosapi:testingHelper:contentEditingUriWithNode test-5 14ccf43a-562a-c9f7-2fd1-733e27068524');
+  const jwtNodeOtherElements = flow('sandstorm.neosapi:testingHelper:contentEditingUriWithNode test-5 82c24d81-51fa-87e5-b4ec-73eb505cb826');
+
+  await page.goto(jwtNodeTextAndImages);
+  expect(await getCurrentNodeAggregateId(page)).toBe('14ccf43a-562a-c9f7-2fd1-733e27068524');
+
+  // we can switch back to live workspace
+  await page.goto(jwtNodeOtherElements);
+  expect(await getCurrentNodeAggregateId(page)).toBe('82c24d81-51fa-87e5-b4ec-73eb505cb826');
 });
