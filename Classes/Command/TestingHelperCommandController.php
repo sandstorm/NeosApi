@@ -53,7 +53,7 @@ class TestingHelperCommandController extends CommandController
             ->buildUri();
     }
 
-    public function ensureSharedWorkspaceExistsCommand(string $workspaceName): string
+    public function ensureSharedWorkspaceExistsCommand(string $workspaceName)
     {
         $cr = ContentRepositoryId::fromString('default');
         $wn = WorkspaceName::fromString($workspaceName);

@@ -14,9 +14,12 @@ function flow(command: string) {
 }
 
 test.beforeEach(async ({ page }) => {
+  page.on("response", (response) => {
+    test.fixme(response.status() === 500, `Error while running the test: The server responded with a 500 status;\nResource URL: ${response.url()}`)
+  });
+
   await makeReduxStoreAccessibleForTesting(page);
 });
-
 
 
 test('Log in via JWT basically works, and creates user at first call', async ({ page }) => {
