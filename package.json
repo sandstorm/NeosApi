@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sandstorm/NeosApi.git"
@@ -15,9 +14,15 @@
   "bugs": {
     "url": "https://github.com/sandstorm/NeosApi/issues"
   },
+  "scripts": {
+    "build": "node build.js",
+    "watch": "node build.js --watch"
+  },
   "homepage": "https://github.com/sandstorm/NeosApi#readme",
   "devDependencies": {
     "@playwright/test": "^1.56.1",
-    "@types/node": "^24.10.0"
+    "@types/node": "^24.10.0",
+    "@neos-project/neos-ui-extensibility": "~8.3.0",
+    "esbuild": "~0.17.18"
   }
 }

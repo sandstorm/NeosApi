@@ -19,6 +19,32 @@ Neos:
         'Sandstorm.NeosApi': {}
           #position: 'before Neos.Neos'
 
+  Neos:
+    Ui:
+      resources:
+        javascript:
+          'Sandstorm.NeosApi':
+            resource: 'resource://Sandstorm.NeosApi/Public/NeosApiUiAdjustments/Plugin.js'
+            # esm support²
+            # in case you want to use esbuild's code splitting (ESM only)
+            # or just reference an ESM Plugin, set the type to module
+            # attributes:
+            #   type: module
+
+        # optional if youre using css
+        stylesheets:
+          'Sandstorm.NeosApi':
+            resource: 'resource://Sandstorm.NeosApi/Public/NeosApiUiAdjustments/Plugin.css'
+
+      configurationDefaultEelContext:
+        Sandstorm.NeosApi.Internal.UiAdjustments: Sandstorm\NeosApi\Internal\UiAdjustmentsHelper
+
+      frontendConfiguration:
+        'Sandstorm.NeosApi':
+          showMainMenu: '${Sandstorm.NeosApi.Internal.UiAdjustments.showMainMenu()}'
+
+
 Sandstorm:
   NeosApi:
     Secret: '%env:NEOS_API_SECRET%'
+

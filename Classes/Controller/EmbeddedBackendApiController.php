@@ -27,6 +27,7 @@ use Neos\Neos\Domain\Service\WorkspaceService;
 use Neos\Neos\FrontendRouting\SiteDetection\SiteDetectionResult;
 use Sandstorm\NeosApi\Auth\ApiJwtToken;
 use Sandstorm\NeosApi\Exceptions\RequestedNodeDoesNotExist;
+use Sandstorm\NeosApi\Internal\UiSessionInfo;
 use Sandstorm\NeosApiClient\Internal\LoginCommandInterface;
 use Sandstorm\NeosApiClient\Internal\SwitchBaseWorkspaceLoginCommand;
 use Sandstorm\NeosApiClient\Internal\SwitchDimensionLoginCommand;
@@ -48,6 +49,9 @@ class EmbeddedBackendApiController extends ActionController
 
     #[Flow\Inject]
     protected ConfigurationManager $configurationManager;
+
+    #[Flow\Inject]
+    protected UiSessionInfo $uiSessionInfo;
 
     /**
      * @Flow\Inject
@@ -114,6 +118,8 @@ class EmbeddedBackendApiController extends ActionController
                 };
                 usort($decoded->neos_cmd, fn ($a, $b) => $priority($a->command) <=> $priority($b->command));
 
+                $this->uiSessionInfo->reset();
+
                 $nodeAddress = $nodeAddress ?? $this->getBaseNodeAddress($decoded->sub);
 
                 foreach ($decoded->neos_cmd as $command) {
@@ -129,7 +135,12 @@ class EmbeddedBackendApiController extends ActionController
                     };
                 }
 
+                // TODO IMPL ME
+                $this->uiSessionInfo->showMainMenu = false;
+                // TODO: Session ggf. manuell maintainen (race condition)!!!! -> SessionManager
+
                 $urlParam = '?node=' . urlencode($nodeAddress?->toJson());
+
                 $this->redirectToUri('/neos/content' . $urlParam);
             }
         }
