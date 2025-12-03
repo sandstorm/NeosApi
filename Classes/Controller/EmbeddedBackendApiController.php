@@ -17,6 +17,7 @@ use Neos\ContentRepositoryRegistry\ContentRepositoryRegistry;
 use Neos\Flow\Annotations as Flow;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use Neos\Flow\Configuration\ConfigurationManager;
 use Neos\Flow\Mvc\Controller\ActionController;
 use Neos\Flow\Security\Context;
 use Neos\Neos\Domain\Repository\SiteRepository;
@@ -43,6 +44,9 @@ class EmbeddedBackendApiController extends ActionController
 
     #[Flow\Inject]
     protected SiteRepository $siteRepository;
+
+    #[Flow\Inject]
+    protected ConfigurationManager $configurationManager;
 
     /**
      * @Flow\Inject
@@ -91,11 +95,17 @@ class EmbeddedBackendApiController extends ActionController
     {
         $nodeAddress = null;
 
+        $secret = $this->configurationManager->getConfiguration(
+            ConfigurationManager::CONFIGURATION_TYPE_SETTINGS,
+            'Sandstorm.NeosApi.Secret'
+        );
+        if($secret === null) throw new \RuntimeException('NeosApi.Secret settings not found');
+        if(!is_string($secret)) throw new \RuntimeException('NeosApi.Secret settings must be a string');
+
         foreach ($this->securityContext->getAuthenticationTokens() as $token) {
             if ($token instanceof ApiJwtToken) {
                 $jwt = $token->getCredentials()['jwt'];
-                $key = 'secret'; // TODO: DO NOT HARDCODE!!!
-                $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
+                $decoded = JWT::decode($jwt, new Key($secret, 'HS256'));
 
                 $nodeAddress = $nodeAddress ?? $this->getBaseNodeAddress($decoded->sub);
 

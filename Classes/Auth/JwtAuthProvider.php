@@ -12,6 +12,7 @@ namespace Sandstorm\NeosApi\Auth;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Neos\Flow\Annotations as Flow;
+use Neos\Flow\Configuration\ConfigurationManager;
 use Neos\Flow\Persistence\PersistenceManagerInterface;
 use Neos\Flow\Security\Authentication\Provider\AbstractProvider;
 use Neos\Flow\Security\Authentication\TokenInterface;
@@ -54,6 +55,13 @@ class JwtAuthProvider extends AbstractProvider
      */
     protected $securityContext;
 
+
+    /**
+     * @var ConfigurationManager
+     * @Flow\Inject
+     */
+    protected $configurationManager;
+
     /**
      * Returns the class names of the tokens this provider can authenticate.
      *
@@ -78,14 +86,20 @@ class JwtAuthProvider extends AbstractProvider
             throw new UnsupportedAuthenticationTokenException('This provider cannot authenticate the given token.', 1217339840);
         }
 
+        $secret = $this->configurationManager->getConfiguration(
+            ConfigurationManager::CONFIGURATION_TYPE_SETTINGS,
+            'Sandstorm.NeosApi.Secret'
+        );
+        if($secret === null) throw new \RuntimeException('NeosApi.Secret settings not found');
+        if(!is_string($secret)) throw new \RuntimeException('NeosApi.Secret settings must be a string');
+
         /** @var $account \Neos\Flow\Security\Account */
         $account = NULL;
         $credentials = $authenticationToken->getCredentials();
 
         if (is_array($credentials) && isset($credentials['jwt'])) {
             $jwt = $credentials['jwt'];
-            $key = 'secret'; // TODO: DO NOT HARDCODE!!!
-            $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
+            $decoded = JWT::decode($jwt, new Key($secret, 'HS256'));
 
             $userName = $decoded->sub;
 

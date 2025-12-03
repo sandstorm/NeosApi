@@ -12,6 +12,7 @@ use Neos\ContentRepository\Core\SharedModel\Workspace\WorkspaceName;
 use Neos\ContentRepositoryRegistry\ContentRepositoryRegistry;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Cli\CommandController;
+use Neos\Flow\Configuration\ConfigurationManager;
 use Neos\Neos\Domain\Model\WorkspaceDescription;
 use Neos\Neos\Domain\Model\WorkspaceRole;
 use Neos\Neos\Domain\Model\WorkspaceRoleAssignment;
@@ -37,12 +38,26 @@ class TestingHelperCommandController extends CommandController
     #[Flow\Inject]
     protected ContentRepositoryRegistry $contentRepositoryRegistry;
 
-    private NeosApiClient $neosApi;
+    #[Flow\Inject]
+    protected ConfigurationManager $configurationManager;
 
-    public function __construct()
+    private ?NeosApiClient $neosApi = null;
+
+    private function getNeosApi(): NeosApiClient
     {
-        parent::__construct();
-        $this->neosApi = NeosApiClient::create('http://127.0.0.1:8081', 'secret');
+        if($this->neosApi !== null) {
+            return $this->neosApi;
+        }
+
+        $secret = $this->configurationManager->getConfiguration(
+            ConfigurationManager::CONFIGURATION_TYPE_SETTINGS,
+            'Sandstorm.NeosApi.Secret'
+        );
+        if($secret === null) throw new \RuntimeException('NeosApi.Secret settings not found');
+        if(!is_string($secret)) throw new \RuntimeException('NeosApi.Secret settings must be a string');
+
+        $this->neosApi = NeosApiClient::create('http://127.0.0.1:8081', $secret);
+        return $this->neosApi;
     }
 
     public function removeUserIfExistsCommand(string $userName)
@@ -88,7 +103,7 @@ class TestingHelperCommandController extends CommandController
 
     public function contentEditingUriCommand(string $user): string
     {
-        return $this->neosApi->ui->contentEditing(userName: $user)
+        return $this->getNeosApi()->ui->contentEditing(userName: $user)
             ->buildUri();
     }
 
@@ -118,14 +133,14 @@ class TestingHelperCommandController extends CommandController
 
     public function contentEditingUriWithSwitchBaseWorkspaceCommand(string $user, string $baseWorkspace): string
     {
-        return $this->neosApi->ui->contentEditing(userName: $user)
+        return $this->getNeosApi()->ui->contentEditing(userName: $user)
             ->publishInto(workspace: $baseWorkspace)
             ->buildUri();
     }
 
     public function contentEditingUriWithNodeCommand(string $user, string $nodeAggregateId): string
     {
-        return $this->neosApi->ui->contentEditing(userName: $user)
+        return $this->getNeosApi()->ui->contentEditing(userName: $user)
             ->node(nodeId: $nodeAggregateId)
             ->buildUri();
     }
@@ -148,14 +163,14 @@ class TestingHelperCommandController extends CommandController
             $dimensions[$key] = $value;
         }
 
-        return $this->neosApi->ui->contentEditing(userName: $user)
+        return $this->getNeosApi()->ui->contentEditing(userName: $user)
             ->dimensions(dimensions: $dimensions)
             ->buildUri();
     }
 
     public function contentEditingUriWithCreateNodeIfNotExistsCommand(string $user, string $nodeAggregateId, string $nodeType, string $parentNodeAggregateId): string
     {
-        return $this->neosApi->ui->contentEditing(userName: $user)
+        return $this->getNeosApi()->ui->contentEditing(userName: $user)
             ->node(nodeId: $nodeAggregateId, createIfNotExisting: new NodeCreation(nodeType: $nodeType, parentNodeId: $parentNodeAggregateId))
             ->buildUri();
     }
@@ -168,7 +183,7 @@ class TestingHelperCommandController extends CommandController
     {
         $this->outputLine('// Szenario: User ggf. anlegen; mit Zielworkspace-Override');
         $this->outputLine(
-            $this->neosApi->ui
+            $this->getNeosApi()->ui
                 ->contentEditing(userName: $user)
                 ->publishInto(workspace: 'live')
                 ->buildUri()
@@ -178,7 +193,7 @@ class TestingHelperCommandController extends CommandController
 
         $this->outputLine('// Szenario: Dimension wählen');
         $this->outputLine(
-            $this->neosApi->ui
+            $this->getNeosApi()->ui
                 ->contentEditing(userName: $user)
                 ->publishInto(workspace: 'live')
                 ->dimensions(dimensions: ['language' => 'de'])
@@ -186,7 +201,7 @@ class TestingHelperCommandController extends CommandController
         );
 
         $this->outputLine(
-            $this->neosApi->ui
+            $this->getNeosApi()->ui
                 ->contentEditing(userName: $user)
                 ->dimensions(dimensions: ['language' => 'en_UK'])
                 ->buildUri()
@@ -203,7 +218,7 @@ class TestingHelperCommandController extends CommandController
                 ->buildUri()
         );
         $this->outputLine(
-            $this->neosApi->ui
+            $this->getNeosApi()->ui
                 ->contentEditing(userName: $user)
                 ->dimensions(dimensions: ['language' => 'en_UK'])
                 ->node('82c24d81-51fa-87e5-b4ec-73eb505cb826') # Other elements
@@ -225,7 +240,7 @@ class TestingHelperCommandController extends CommandController
 
         $this->outputLine('// bestimmte UI Elemente ein oder ausblenden');
         $this->outputLine(
-            $this->neosApi->ui
+            $this->getNeosApi()->ui
                 ->contentEditing(userName: $user)
                 ->documentNode('product-foo') # node ID
                 ->dimension('....')
@@ -239,7 +254,7 @@ class TestingHelperCommandController extends CommandController
 
         $this->outputLine('// Szenario: nur bestimmter Teilbaum sichtbar.');
         $this->outputLine(
-            $this->neosApi->ui
+            $this->getNeosApi()->ui
                 ->contentEditing(userName: $user)
                 ->nodeVisibility('product-foo') # subtreeTag
                 ->buildUri()
@@ -251,7 +266,7 @@ class TestingHelperCommandController extends CommandController
         //->createNodeIfNotExisting(parent: ...)->forDocumentNode('my-product')->enableContentTree()->buildUri();
 
 
-        $this->outputLine($this->neosApi->ui->contentEditing($user)->buildUri());
+        $this->outputLine($this->getNeosApi()->ui->contentEditing($user)->buildUri());
         // echo NeosApiClient::create('http://127.0.0.1:8081')->embeddedContentModule()->buildUri();
     }
 }

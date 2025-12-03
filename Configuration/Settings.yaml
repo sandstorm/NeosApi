@@ -18,3 +18,7 @@ Neos:
       routes:
         'Sandstorm.NeosApi': {}
           #position: 'before Neos.Neos'
+
+Sandstorm:
+  NeosApi:
+    Secret: '%env:NEOS_API_SECRET%'
