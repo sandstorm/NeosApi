@@ -26,6 +26,7 @@ use Neos\Neos\Domain\Service\UserService;
 use Neos\Neos\Domain\Service\WorkspaceService;
 use Neos\Neos\FrontendRouting\SiteDetection\SiteDetectionResult;
 use Sandstorm\NeosApi\Auth\ApiJwtToken;
+use Sandstorm\NeosApi\Exceptions\RequestedNodeDoesNotExist;
 use Sandstorm\NeosApiClient\Internal\LoginCommandInterface;
 use Sandstorm\NeosApiClient\Internal\SwitchBaseWorkspaceLoginCommand;
 use Sandstorm\NeosApiClient\Internal\SwitchDimensionLoginCommand;
@@ -93,8 +94,6 @@ class EmbeddedBackendApiController extends ActionController
 
     public function openAction()
     {
-        $nodeAddress = null;
-
         $secret = $this->configurationManager->getConfiguration(
             ConfigurationManager::CONFIGURATION_TYPE_SETTINGS,
             'Sandstorm.NeosApi.Secret'
@@ -106,6 +105,14 @@ class EmbeddedBackendApiController extends ActionController
             if ($token instanceof ApiJwtToken) {
                 $jwt = $token->getCredentials()['jwt'];
                 $decoded = JWT::decode($jwt, new Key($secret, 'HS256'));
+
+
+                $priority = fn($class) => match($class) {
+                    SwitchBaseWorkspaceLoginCommand::class => 0,
+                    SwitchDimensionLoginCommand::class => 0,
+                    SwitchEditedNodeLoginCommand::class => 1,
+                };
+                usort($decoded->neos_cmd, fn ($a, $b) => $priority($a->command) <=> $priority($b->command));
 
                 $nodeAddress = $nodeAddress ?? $this->getBaseNodeAddress($decoded->sub);
 
@@ -121,11 +128,13 @@ class EmbeddedBackendApiController extends ActionController
                         SwitchEditedNodeLoginCommand::class => $this->handleSwitchEditedNode($command, $decoded->sub, $nodeAddress),
                     };
                 }
+
+                $urlParam = '?node=' . urlencode($nodeAddress?->toJson());
+                $this->redirectToUri('/neos/content' . $urlParam);
             }
         }
 
-        $urlParam = $nodeAddress ? '?node=' . urlencode($nodeAddress?->toJson()) : '';
-        $this->redirectToUri('/neos/content' . $urlParam);
+        throw new \RuntimeException('No JWT token found in security context');
     }
 
     private function handleSwitchBaseWorkspace(
@@ -168,6 +177,9 @@ class EmbeddedBackendApiController extends ActionController
         );
     }
 
+    /**
+     * @throws AccessDenied|RequestedNodeDoesNotExist
+     */
     private function handleSwitchEditedNode(
         SwitchEditedNodeLoginCommand $command,
         string                       $userName,
@@ -180,21 +192,28 @@ class EmbeddedBackendApiController extends ActionController
         }
 
         $contentRepository = $this->contentRepositoryRegistry->get($nodeAddress->contentRepositoryId);
-        $node = $contentRepository->getContentGraph($nodeAddress->workspaceName)
-            ->findNodeAggregateById($targetNodeAggregateId);
+        $contentGraph = $contentRepository->getContentGraph($nodeAddress->workspaceName);
+        $node = $contentGraph->findNodeAggregateById($targetNodeAggregateId);
+        $nodeExists = $node !== null && $node->coversDimensionSpacePoint($nodeAddress->dimensionSpacePoint);
 
-        if($node === null && $command->nodeCreation === null) {
-            //TODO: custom exception?
-            throw new NodeAggregateCurrentlyDoesNotExist();
+        if(!$nodeExists && $command->nodeCreation === null) {
+            throw new RequestedNodeDoesNotExist();
 
-        } else if($node === null && $command->nodeCreation !== null) {
-            $contentRepository->handle(CreateNodeAggregateWithNode::create(
-                workspaceName: $nodeAddress->workspaceName,
-                nodeAggregateId: $targetNodeAggregateId,
-                nodeTypeName: NodeTypeName::fromString($command->nodeCreation->nodeType),
-                originDimensionSpacePoint: OriginDimensionSpacePoint::fromDimensionSpacePoint($nodeAddress->dimensionSpacePoint),
-                parentNodeAggregateId: NodeAggregateId::fromString($command->nodeCreation->parentNodeId),
-            ));
+        } else if(!$nodeExists && $command->nodeCreation !== null) {
+            $parentNodeId = NodeAggregateId::fromString($command->nodeCreation->parentNodeId);
+            $parentNode = $contentGraph->findNodeAggregateById($parentNodeId);
+            if($parentNode === null || !$parentNode->coversDimensionSpacePoint($nodeAddress->dimensionSpacePoint)) {
+                throw new RequestedNodeDoesNotExist();
+
+            } else {
+                $contentRepository->handle(CreateNodeAggregateWithNode::create(
+                    workspaceName: $nodeAddress->workspaceName,
+                    nodeAggregateId: $targetNodeAggregateId,
+                    nodeTypeName: NodeTypeName::fromString($command->nodeCreation->nodeType),
+                    originDimensionSpacePoint: OriginDimensionSpacePoint::fromDimensionSpacePoint($nodeAddress->dimensionSpacePoint),
+                    parentNodeAggregateId: NodeAggregateId::fromString($command->nodeCreation->parentNodeId),
+                ));
+            }
         }
 
         return $nodeAddress->withAggregateId($targetNodeAggregateId);

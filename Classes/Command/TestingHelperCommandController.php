@@ -148,20 +148,12 @@ class TestingHelperCommandController extends CommandController
 
     /**
      * @param string $user
-     * @param array<string,string> $dimensions
+     * @param string[] $dimension
      * @return string
      */
     public function contentEditingUriWithSwitchDimensionCommand(string $user, array $dimension): string
     {
-        $dimensions = [];
-        foreach ($dimension as $pair) {
-            $exploded = explode(':', $pair, 2);
-            if(count($exploded) !== 2) {
-                throw new \InvalidArgumentException("--dimension must have from <key>:<value>, \"$pair\" was given. Did you use \"=\" instead of \":\"?");
-            }
-            [$key, $value] = $exploded;
-            $dimensions[$key] = $value;
-        }
+        $dimensions = $this->splitDimensionArray($dimension);
 
         return $this->getNeosApi()->ui->contentEditing(userName: $user)
             ->dimensions(dimensions: $dimensions)
@@ -172,6 +164,22 @@ class TestingHelperCommandController extends CommandController
     {
         return $this->getNeosApi()->ui->contentEditing(userName: $user)
             ->node(nodeId: $nodeAggregateId, createIfNotExisting: new NodeCreation(nodeType: $nodeType, parentNodeId: $parentNodeAggregateId))
+            ->buildUri();
+    }
+
+    /**
+     * @param string $user
+     * @param string $nodeAggregateId
+     * @param string[] $dimension
+     * @return string
+     */
+    public function contentEditingUriNodeSelectionBeforeDimensionSelectionCommand(string $user, string $nodeAggregateId, array $dimension): string
+    {
+        $dimensions = $this->splitDimensionArray($dimension);
+
+        return $this->getNeosApi()->ui->contentEditing(userName: $user)
+            ->node(nodeId: $nodeAggregateId)
+            ->dimensions(dimensions: $dimensions)
             ->buildUri();
     }
 
@@ -211,7 +219,7 @@ class TestingHelperCommandController extends CommandController
 
         $this->outputLine('// Szenario: zu bestimmten Produkt-Node springen (user sieht aber weiterhin alles)');
         $this->outputLine(
-            $this->neosApi->ui
+            $this->getNeosApi()->ui
                 ->contentEditing(userName: $user)
                 ->dimensions(dimensions: ['language' => 'en_UK'])
                 ->node('14ccf43a-562a-c9f7-2fd1-733e27068524') # Text & images
@@ -229,7 +237,7 @@ class TestingHelperCommandController extends CommandController
 
         $this->outputLine('// Szenario: zu bestimmten Produkt-Node springen, und diesen ggf. neu anlegen if not existing (user sieht aber weiterhin alles)');
         $this->outputLine(
-            $this->neosApi->ui
+            $this->getNeosApi()->ui
                 ->contentEditing(userName: $user)
                 ->node('product-foo', createIfNotExisting: new NodeCreation(nodeType: '....', parentNodeId: '....')) # node ID
                 ->node('product-foo', createIfNotExisting: new NodeCreation(nodeType: '....')) # node ID -> parentNodeId -> könnte als Default am NodeType stehen. ("ProductsFolder"?
@@ -268,5 +276,23 @@ class TestingHelperCommandController extends CommandController
 
         $this->outputLine($this->getNeosApi()->ui->contentEditing($user)->buildUri());
         // echo NeosApiClient::create('http://127.0.0.1:8081')->embeddedContentModule()->buildUri();
+    }
+
+    /**
+     * @param string[] $dimension
+     * @return array<string,string>
+     */
+    private function splitDimensionArray(array $dimension): array
+    {
+        $dimensions = [];
+        foreach ($dimension as $pair) {
+            $exploded = explode(':', $pair, 2);
+            if(count($exploded) !== 2) {
+                throw new \InvalidArgumentException("--dimension must have from <key>:<value>, \"$pair\" was given. Did you use \"=\" instead of \":\"?");
+            }
+            [$key, $value] = $exploded;
+            $dimensions[$key] = $value;
+        }
+        return $dimensions;
     }
 }

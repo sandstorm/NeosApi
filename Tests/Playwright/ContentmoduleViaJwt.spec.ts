@@ -102,3 +102,17 @@ test('Log in via JWT can create nodes if they do not yet exist', async ({ page }
   await page.goto(jwtNode);
   expect(await getCurrentNodeAggregateId(page)).toBe('a399a3ce-4923-4097-a3d4-2e291e22a1fc');
 });
+
+test('The order of JWT LoginCommands should not change their semantics', async ({ page }) => {
+  console.log(flow('sandstorm.neosapi:testingHelper:removeUserIfExists test-7'));
+
+  const jwtNode = flow('sandstorm.neosapi:testingHelper:contentEditingUriNodeSelectionBeforeDimensionSelection' +
+    ' --user=test-7' +
+    ' --nodeAggregateId=d87adae6-9e61-4dbc-b596-219abe1e45a2' +
+    ' --dimension=language:de');
+
+  await expect(async () => {
+    const response = await page.request.get(jwtNode, { timeout: 2_000, maxRedirects: 0 });
+    expect(response.status()).toBe(400);
+  }).toPass({ timeout: 2_000 });
+});
