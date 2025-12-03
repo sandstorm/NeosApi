@@ -3,7 +3,13 @@
 namespace Sandstorm\NeosApi\Controller;
 
 use Neos\ContentRepository\Core\DimensionSpace\DimensionSpacePoint;
+use Neos\ContentRepository\Core\DimensionSpace\OriginDimensionSpacePoint;
+use Neos\ContentRepository\Core\Feature\NodeCreation\Command\CreateNodeAggregateWithNode;
+use Neos\ContentRepository\Core\Feature\NodeModification\Dto\PropertyValuesToWrite;
+use Neos\ContentRepository\Core\Feature\NodeReferencing\Dto\NodeReferencesToWrite;
 use Neos\ContentRepository\Core\Feature\WorkspaceModification\Command\ChangeBaseWorkspace;
+use Neos\ContentRepository\Core\NodeType\NodeTypeName;
+use Neos\ContentRepository\Core\SharedModel\Exception\NodeAggregateCurrentlyDoesNotExist;
 use Neos\ContentRepository\Core\SharedModel\Node\NodeAddress;
 use Neos\ContentRepository\Core\SharedModel\Node\NodeAggregateId;
 use Neos\ContentRepository\Core\SharedModel\Workspace\WorkspaceName;
@@ -98,6 +104,7 @@ class EmbeddedBackendApiController extends ActionController
                     $command = $className::fromStdClass($command);
                     assert($command instanceof LoginCommandInterface);
 
+                    //TODO: order/prioritize command executions?
                     $nodeAddress = match(get_class($command)) {
                         SwitchBaseWorkspaceLoginCommand::class => $this->handleSwitchBaseWorkspace($command, $decoded->sub, $nodeAddress),
                         SwitchDimensionLoginCommand::class => $this->handleSwitchDimension($command, $decoded->sub, $nodeAddress),
@@ -160,6 +167,24 @@ class EmbeddedBackendApiController extends ActionController
         $targetNodeAggregateId = NodeAggregateId::fromString($command->nodeId);
         if($nodeAddress->aggregateId === $targetNodeAggregateId) {
             return $nodeAddress;
+        }
+
+        $contentRepository = $this->contentRepositoryRegistry->get($nodeAddress->contentRepositoryId);
+        $node = $contentRepository->getContentGraph($nodeAddress->workspaceName)
+            ->findNodeAggregateById($targetNodeAggregateId);
+
+        if($node === null && $command->nodeCreation === null) {
+            //TODO: custom exception?
+            throw new NodeAggregateCurrentlyDoesNotExist();
+
+        } else if($node === null && $command->nodeCreation !== null) {
+            $contentRepository->handle(CreateNodeAggregateWithNode::create(
+                workspaceName: $nodeAddress->workspaceName,
+                nodeAggregateId: $targetNodeAggregateId,
+                nodeTypeName: NodeTypeName::fromString($command->nodeCreation->nodeType),
+                originDimensionSpacePoint: OriginDimensionSpacePoint::fromDimensionSpacePoint($nodeAddress->dimensionSpacePoint),
+                parentNodeAggregateId: NodeAggregateId::fromString($command->nodeCreation->parentNodeId),
+            ));
         }
 
         return $nodeAddress->withAggregateId($targetNodeAggregateId);

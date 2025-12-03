@@ -88,3 +88,17 @@ test('Log in via JWT can select edited node', async ({ page }) => {
   await page.goto(jwtNodeOtherElements);
   expect(await getCurrentNodeAggregateId(page)).toBe('82c24d81-51fa-87e5-b4ec-73eb505cb826');
 });
+
+test('Log in via JWT can create nodes if they do not yet exist', async ({ page }) => {
+  console.log(flow('sandstorm.neosapi:testingHelper:removeUserIfExists test-6'));
+  console.log(flow('sandstorm.neosapi:testingHelper:removeNodeIfExists test-6 a399a3ce-4923-4097-a3d4-2e291e22a1fc'));
+
+  const jwtNode = flow('sandstorm.neosapi:testingHelper:contentEditingUriWithCreateNodeIfNotExists' +
+    ' --user=test-6' +
+    ' --nodeAggregateId=a399a3ce-4923-4097-a3d4-2e291e22a1fc' +
+    ' --nodeType=Neos.Demo:Document.Page' +
+    ' --parentNodeAggregateId=a66ec7db-3459-b67b-7bcb-16e2508a89f0');
+
+  await page.goto(jwtNode);
+  expect(await getCurrentNodeAggregateId(page)).toBe('a399a3ce-4923-4097-a3d4-2e291e22a1fc');
+});
