@@ -42,6 +42,7 @@ Neos:
       frontendConfiguration:
         'Sandstorm.NeosApi':
           showMainMenu: '${Sandstorm.NeosApi.Internal.UiAdjustments.showMainMenu()}'
+          showLeftSideBar: '${Sandstorm.NeosApi.Internal.UiAdjustments.showLeftSideBar()}'
 
 
 Sandstorm:

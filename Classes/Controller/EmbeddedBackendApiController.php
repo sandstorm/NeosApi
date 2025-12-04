@@ -233,5 +233,6 @@ class EmbeddedBackendApiController extends ActionController
     )
     {
         $uiSessionInfo->showMainMenu = $command->showMainMenu ?? $uiSessionInfo->showMainMenu;
+        $uiSessionInfo->showLeftSideBar = $command->showLeftSideBar ?? $uiSessionInfo->showLeftSideBar;
     }
 }

@@ -125,9 +125,22 @@ test('Log in via JWT can hide the main menu', async ({ page }) => {
 
   await page.goto(jwtNode);
   // wait for page to load
-  await expect(page.locator('css=#neos-application')).toHaveCount(1);
+  await expect(page.locator('#neos-application')).toHaveCount(1);
   // actual test case
-  await expect(page.locator('css=#neos-MenuToggler')).toHaveCount(0);
+  await expect(page.locator('#neos-MenuToggler')).toHaveCount(0);
+});
+
+test('Log in via JWT can hide the sidebar', async ({ page }) => {
+  console.log(flow('sandstorm.neosapi:testingHelper:removeUserIfExists test-8'));
+
+  const jwtNode = flow('sandstorm.neosapi:testingHelper:contentEditingWithHiddenLeftSideBar' +
+    ' --user=test-8');
+
+  await page.goto(jwtNode);
+  // wait for page to load
+  await expect(page.locator('#neos-application')).toHaveCount(1);
+  // actual test case
+  await expect(page.locator('#neos-LeftSideBarToggler')).toHaveCount(0);
 });
 
 test('Log in via JWT can reduce the editing ui to the bare minimum', async ({ page }) => {
@@ -138,7 +151,8 @@ test('Log in via JWT can reduce the editing ui to the bare minimum', async ({ pa
 
   await page.goto(jwtNode);
   // wait for page to load
-  await expect(page.locator('css=#neos-application')).toHaveCount(1);
+  await expect(page.locator('#neos-application')).toHaveCount(1);
   // actual test cases
   await expect(page.locator('#neos-MenuToggler')).toHaveCount(0);
+  await expect(page.locator('#neos-LeftSideBarToggler')).toHaveCount(0);
 });

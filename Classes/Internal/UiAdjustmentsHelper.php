@@ -16,6 +16,10 @@ class UiAdjustmentsHelper implements ProtectedContextAwareInterface
         return $this->uiSessionInfoService->getUiSessionInfo()->showMainMenu;
     }
 
+    public function showLeftSideBar() {
+        return $this->uiSessionInfoService->getUiSessionInfo()->showLeftSideBar;
+    }
+
     public function allowsCallOfMethod($methodName) {
         return true;
     }

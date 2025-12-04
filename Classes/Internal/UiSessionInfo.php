@@ -8,6 +8,7 @@ use Neos\Flow\Annotations as Flow;
 class UiSessionInfo
 {
     public bool $showMainMenu;
+    public bool $showLeftSideBar;
 
     function __construct()
     {
@@ -16,5 +17,6 @@ class UiSessionInfo
 
     function reset() {
         $this->showMainMenu = true;
+        $this->showLeftSideBar = true;
     }
 }

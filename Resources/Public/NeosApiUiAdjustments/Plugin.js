@@ -140,20 +140,43 @@
     }
   });
 
+  // Resources/Private/NeosApiUiAdjustments/WrappedLeftSideBar.js
+  function wrappedLeftSideBarFactory(OriginalLeftSideBar) {
+    class WrappedLeftSideBar extends import_react2.PureComponent {
+      render() {
+        const { showLeftSideBar } = this.props;
+        if (showLeftSideBar) {
+          return /* @__PURE__ */ import_react2.default.createElement(OriginalLeftSideBar, null);
+        }
+        return null;
+      }
+    }
+    return (0, import_neos_ui_decorators2.neos)((globalRegistry) => ({
+      showLeftSideBar: globalRegistry.get("frontendConfiguration").get("Sandstorm.NeosApi").showLeftSideBar
+    }))(WrappedLeftSideBar);
+  }
+  var import_react2, import_neos_ui_decorators2;
+  var init_WrappedLeftSideBar = __esm({
+    "Resources/Private/NeosApiUiAdjustments/WrappedLeftSideBar.js"() {
+      import_react2 = __toESM(require_react());
+      import_neos_ui_decorators2 = __toESM(require_neos_ui_decorators());
+    }
+  });
+
   // Resources/Private/NeosApiUiAdjustments/manifest.js
   var require_manifest = __commonJS({
     "Resources/Private/NeosApiUiAdjustments/manifest.js"() {
       init_dist();
       init_WrappedMenuToggler();
+      init_WrappedLeftSideBar();
       dist_default("Sandstorm.NeosApi", {}, (globalRegistry) => {
-        console.log("HALLO WELT");
-        console.log(globalRegistry.get("frontendConfiguration").get("Sandstorm.NeosApi"));
-        window.setTimeout(() => {
-          console.log(globalRegistry.get("frontendConfiguration").get("Sandstorm.NeosApi"));
-        }, 100);
         const containerRegistry = globalRegistry.get("containers");
-        const OriginalMenuToggler = containerRegistry.get("PrimaryToolbar/Left/MenuToggler");
-        containerRegistry.set("PrimaryToolbar/Left/MenuToggler", wrappedMenuTogglerFactory(OriginalMenuToggler));
+        const wrapContainer = (name, wrapperFactory) => {
+          const OriginalContainer = containerRegistry.get(name);
+          containerRegistry.set(name, wrapperFactory(OriginalContainer));
+        };
+        wrapContainer("PrimaryToolbar/Left/MenuToggler", wrappedMenuTogglerFactory);
+        wrapContainer("LeftSideBar", wrappedLeftSideBarFactory);
       });
     }
   });

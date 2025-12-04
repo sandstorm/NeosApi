@@ -1,5 +1,6 @@
 import manifest from '@neos-project/neos-ui-extensibility';
 import {wrappedMenuTogglerFactory} from './WrappedMenuToggler';
+import {wrappedLeftSideBarFactory} from './WrappedLeftSideBar';
 
 manifest('Sandstorm.NeosApi', {}, (globalRegistry) => {
 	// Registry definitions:
@@ -7,8 +8,13 @@ manifest('Sandstorm.NeosApi', {}, (globalRegistry) => {
 	// https://github.com/neos/neos-ui/blob/9.0/packages/neos-ui/src/manifest.containers.js
 
 	const containerRegistry = globalRegistry.get('containers');
-	const OriginalMenuToggler = containerRegistry.get('PrimaryToolbar/Left/MenuToggler');
-	containerRegistry.set('PrimaryToolbar/Left/MenuToggler', wrappedMenuTogglerFactory(OriginalMenuToggler));
+	const wrapContainer = (name, wrapperFactory) => {
+		const OriginalContainer = containerRegistry.get(name);
+		containerRegistry.set(name, wrapperFactory(OriginalContainer));
+	}
+
+	wrapContainer('PrimaryToolbar/Left/MenuToggler', wrappedMenuTogglerFactory);
+	wrapContainer('LeftSideBar', wrappedLeftSideBarFactory);
 });
 
 

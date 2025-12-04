@@ -190,6 +190,13 @@ class TestingHelperCommandController extends CommandController
             ->buildUri();
     }
 
+    public function contentEditingWithHiddenLeftSideBarCommand(string $user): string
+    {
+        return $this->getNeosApi()->ui->contentEditing(userName: $user)
+            ->hideLeftSideBar()
+            ->buildUri();
+    }
+
     public function contentEditingWithMinimalUiCommand(string $user): string
     {
         return $this->getNeosApi()->ui->contentEditing(userName: $user)
