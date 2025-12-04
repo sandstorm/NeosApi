@@ -6,15 +6,14 @@ use Neos\Eel\ProtectedContextAwareInterface;
 
 class UiAdjustmentsHelper implements ProtectedContextAwareInterface
 {
-
     public function __construct(
-        protected UiSessionInfo $uiSessionInfo
+        protected UiSessionInfoService $uiSessionInfoService
     )
     {
     }
 
     public function showMainMenu() {
-        return $this->uiSessionInfo->showMainMenu;
+        return $this->uiSessionInfoService->getUiSessionInfo()->showMainMenu;
     }
 
     public function allowsCallOfMethod($methodName) {

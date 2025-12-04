@@ -183,6 +183,20 @@ class TestingHelperCommandController extends CommandController
             ->buildUri();
     }
 
+    public function contentEditingWithHiddenMainMenuCommand(string $user): string
+    {
+        return $this->getNeosApi()->ui->contentEditing(userName: $user)
+            ->hideMainMenu()
+            ->buildUri();
+    }
+
+    public function contentEditingWithMinimalUiCommand(string $user): string
+    {
+        return $this->getNeosApi()->ui->contentEditing(userName: $user)
+            ->minimalUi()
+            ->buildUri();
+    }
+
 
     public function embeddedContentModuleCommand(
         string $user,
@@ -250,10 +264,10 @@ class TestingHelperCommandController extends CommandController
         $this->outputLine(
             $this->getNeosApi()->ui
                 ->contentEditing(userName: $user)
+                ->hideMainMenu()
                 ->documentNode('product-foo') # node ID
                 ->dimension('....')
                 ->editPreviewMode('mobile')
-                ->hideMainMenu()
                 ->minimalUi()
                 ->buildUri()
         );

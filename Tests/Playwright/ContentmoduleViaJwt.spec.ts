@@ -116,3 +116,29 @@ test('The order of JWT LoginCommands should not change their semantics', async (
     expect(response.status()).toBe(400);
   }).toPass({ timeout: 2_000 });
 });
+
+test('Log in via JWT can hide the main menu', async ({ page }) => {
+  console.log(flow('sandstorm.neosapi:testingHelper:removeUserIfExists test-8'));
+
+  const jwtNode = flow('sandstorm.neosapi:testingHelper:contentEditingWithHiddenMainMenu' +
+    ' --user=test-8');
+
+  await page.goto(jwtNode);
+  // wait for page to load
+  await expect(page.locator('css=#neos-application')).toHaveCount(1);
+  // actual test case
+  await expect(page.locator('css=#neos-MenuToggler')).toHaveCount(0);
+});
+
+test('Log in via JWT can reduce the editing ui to the bare minimum', async ({ page }) => {
+  console.log(flow('sandstorm.neosapi:testingHelper:removeUserIfExists test-minimal-ui'));
+
+  const jwtNode = flow('sandstorm.neosapi:testingHelper:contentEditingWithMinimalUi' +
+    ' --user=test-minimal-ui');
+
+  await page.goto(jwtNode);
+  // wait for page to load
+  await expect(page.locator('css=#neos-application')).toHaveCount(1);
+  // actual test cases
+  await expect(page.locator('#neos-MenuToggler')).toHaveCount(0);
+});

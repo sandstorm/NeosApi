@@ -5,11 +5,8 @@ namespace Sandstorm\NeosApi\Controller;
 use Neos\ContentRepository\Core\DimensionSpace\DimensionSpacePoint;
 use Neos\ContentRepository\Core\DimensionSpace\OriginDimensionSpacePoint;
 use Neos\ContentRepository\Core\Feature\NodeCreation\Command\CreateNodeAggregateWithNode;
-use Neos\ContentRepository\Core\Feature\NodeModification\Dto\PropertyValuesToWrite;
-use Neos\ContentRepository\Core\Feature\NodeReferencing\Dto\NodeReferencesToWrite;
 use Neos\ContentRepository\Core\Feature\WorkspaceModification\Command\ChangeBaseWorkspace;
 use Neos\ContentRepository\Core\NodeType\NodeTypeName;
-use Neos\ContentRepository\Core\SharedModel\Exception\NodeAggregateCurrentlyDoesNotExist;
 use Neos\ContentRepository\Core\SharedModel\Node\NodeAddress;
 use Neos\ContentRepository\Core\SharedModel\Node\NodeAggregateId;
 use Neos\ContentRepository\Core\SharedModel\Workspace\WorkspaceName;
@@ -20,6 +17,7 @@ use Firebase\JWT\Key;
 use Neos\Flow\Configuration\ConfigurationManager;
 use Neos\Flow\Mvc\Controller\ActionController;
 use Neos\Flow\Security\Context;
+use Neos\Flow\Session\SessionManager;
 use Neos\Neos\Domain\Repository\SiteRepository;
 use Neos\Neos\Domain\Service\NodeTypeNameFactory;
 use Neos\Neos\Domain\Service\UserService;
@@ -28,6 +26,9 @@ use Neos\Neos\FrontendRouting\SiteDetection\SiteDetectionResult;
 use Sandstorm\NeosApi\Auth\ApiJwtToken;
 use Sandstorm\NeosApi\Exceptions\RequestedNodeDoesNotExist;
 use Sandstorm\NeosApi\Internal\UiSessionInfo;
+use Sandstorm\NeosApi\Internal\UiSessionInfoService;
+use Sandstorm\NeosApi\Internal\UnusedSessionInfo;
+use Sandstorm\NeosApiClient\Internal\AdaptNeosUiLoginCommand;
 use Sandstorm\NeosApiClient\Internal\LoginCommandInterface;
 use Sandstorm\NeosApiClient\Internal\SwitchBaseWorkspaceLoginCommand;
 use Sandstorm\NeosApiClient\Internal\SwitchDimensionLoginCommand;
@@ -51,13 +52,10 @@ class EmbeddedBackendApiController extends ActionController
     protected ConfigurationManager $configurationManager;
 
     #[Flow\Inject]
-    protected UiSessionInfo $uiSessionInfo;
+    protected UiSessionInfoService $uiSessionInfoService;
 
-    /**
-     * @Flow\Inject
-     * @var UserService
-     */
-    protected $userService;
+    #[Flow\Inject]
+    protected UserService $userService;
 
     private function getBaseNodeAddress(string $userName): NodeAddress
     {
@@ -118,7 +116,8 @@ class EmbeddedBackendApiController extends ActionController
                 };
                 usort($decoded->neos_cmd, fn ($a, $b) => $priority($a->command) <=> $priority($b->command));
 
-                $this->uiSessionInfo->reset();
+                $uiSessionInfo = $this->uiSessionInfoService->getUiSessionInfo();
+                $uiSessionInfo->reset();
 
                 $nodeAddress = $nodeAddress ?? $this->getBaseNodeAddress($decoded->sub);
 
@@ -127,20 +126,21 @@ class EmbeddedBackendApiController extends ActionController
                     $command = $className::fromStdClass($command);
                     assert($command instanceof LoginCommandInterface);
 
-                    //TODO: order/prioritize command executions?
-                    $nodeAddress = match(get_class($command)) {
-                        SwitchBaseWorkspaceLoginCommand::class => $this->handleSwitchBaseWorkspace($command, $decoded->sub, $nodeAddress),
-                        SwitchDimensionLoginCommand::class => $this->handleSwitchDimension($command, $decoded->sub, $nodeAddress),
-                        SwitchEditedNodeLoginCommand::class => $this->handleSwitchEditedNode($command, $decoded->sub, $nodeAddress),
+                    match(get_class($command)) {
+                        SwitchBaseWorkspaceLoginCommand::class =>
+                            $nodeAddress = $this->handleSwitchBaseWorkspace($command, $nodeAddress),
+                        SwitchDimensionLoginCommand::class =>
+                            $nodeAddress = $this->handleSwitchDimension($command, $nodeAddress),
+                        SwitchEditedNodeLoginCommand::class =>
+                            $nodeAddress = $this->handleSwitchEditedNode($command, $nodeAddress),
+                        AdaptNeosUiLoginCommand::class =>
+                            $this->handleAdaptNeosUi($command, $uiSessionInfo),
                     };
                 }
 
-                // TODO IMPL ME
-                $this->uiSessionInfo->showMainMenu = false;
                 // TODO: Session ggf. manuell maintainen (race condition)!!!! -> SessionManager
 
                 $urlParam = '?node=' . urlencode($nodeAddress?->toJson());
-
                 $this->redirectToUri('/neos/content' . $urlParam);
             }
         }
@@ -150,7 +150,6 @@ class EmbeddedBackendApiController extends ActionController
 
     private function handleSwitchBaseWorkspace(
         SwitchBaseWorkspaceLoginCommand $command,
-        string $userName,
         NodeAddress $nodeAddress
     ): NodeAddress
     {
@@ -171,7 +170,6 @@ class EmbeddedBackendApiController extends ActionController
 
     private function handleSwitchDimension(
         SwitchDimensionLoginCommand $command,
-        string $userName,
         NodeAddress $nodeAddress
     ): NodeAddress
     {
@@ -193,7 +191,6 @@ class EmbeddedBackendApiController extends ActionController
      */
     private function handleSwitchEditedNode(
         SwitchEditedNodeLoginCommand $command,
-        string                       $userName,
         NodeAddress                  $nodeAddress
     ): NodeAddress
     {
@@ -228,5 +225,13 @@ class EmbeddedBackendApiController extends ActionController
         }
 
         return $nodeAddress->withAggregateId($targetNodeAggregateId);
+    }
+
+    function handleAdaptNeosUi(
+        AdaptNeosUiLoginCommand $command,
+        UiSessionInfo $uiSessionInfo,
+    )
+    {
+        $uiSessionInfo->showMainMenu = $command->showMainMenu ?? $uiSessionInfo->showMainMenu;
     }
 }
