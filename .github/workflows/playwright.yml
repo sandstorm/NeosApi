@@ -1,29 +1,141 @@
 name: Playwright Tests
+# TODO: remove "playwright-ci" from list once it should be merged
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, playwright-ci ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main, master, playwright-ci ]
 jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+
     env:
       NEOS_API_SECRET: super-secret-test-key
+      FLOW_CONTEXT: Production
+      DISTRIBUTION_FOLDER: neos-distribution
+      PACKAGE_FOLDER: DistributionPackages/NeosApi
+      PACKAGE_CLIENT_FOLDER: DistributionPackages/NeosApiClient
+
+    defaults:
+      run:
+        working-directory: ${{ env.DISTRIBUTION_FOLDER }}
+
+    services:
+      mariadb:
+        # see https://mariadb.com/kb/en/mariadb-server-release-dates/
+        # this should be a current release, e.g. the LTS version
+        image: mariadb:10.6
+        env:
+          MYSQL_USER: neos
+          MYSQL_PASSWORD: neos
+          MYSQL_DATABASE: neos
+          MYSQL_ROOT_PASSWORD: neos
+        ports:
+          - "3306:3306"
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
-    - name: Install dependencies
-      run: npm ci
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
-    - name: Run Playwright tests
-      run: npx playwright test
-    - uses: actions/upload-artifact@v4
-      if: ${{ !cancelled() }}
-      with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 30
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: mbstring, xml, json, zlib, iconv, intl, pdo_sqlite, mysql
+
+      - name: Checkout development distribution
+        uses: actions/checkout@v4
+        with:
+          repository: neos/neos-development-distribution
+          ref: ${{ matrix.neos-version }}
+          path: ${{ env.DISTRIBUTION_FOLDER }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: "${{ env.DISTRIBUTION_FOLDER }}/${{ env.PACKAGE_FOLDER }}"
+
+      - name: Checkout NeosApiClient code
+        uses: actions/checkout@v4
+        with:
+          repository: sandstorm/NeosApiClient
+          ref: main
+          path: "${{ env.DISTRIBUTION_FOLDER }}/${{ env.PACKAGE_CLIENT_FOLDER }}"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        timeout-minutes: 30
+        with:
+          path: |
+            ~/.cache/composer
+            ${{ env.DISTRIBUTION_FOLDER }}/Packages
+          key: php-${{ matrix.php-version }}-neos-${{ matrix.neos-version }}-${{ hashFiles('**/composer.json') }}
+          restore-keys: php-${{ matrix.php-version }}-neos-${{ matrix.neos-version }}-
+
+      - name: Install and link composer dependencies
+        run: |
+          composer config --no-plugins allow-plugins.neos/composer-plugin true
+          composer require --no-update --no-interaction sandstorm/neosapiclient:@dev
+          composer require --no-update --no-interaction sandstorm/neosapi:@dev
+
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Setup Flow
+        run: |
+          rm -f Configuration/Settings.yaml
+          cat <<EOF >> Configuration/Settings.yaml
+          Neos:
+            Flow:
+              persistence:
+                backendOptions:
+                  host: '127.0.0.1'
+                  driver: pdo_mysql
+                  user: 'neos'
+                  password: 'neos'
+                  dbname: 'neos'
+
+            Neos:
+              Ui:
+                frontendDevelopmentMode: true
+          EOF
+          ./flow
+          ./flow doctrine:migrate
+
+      - name: Setup Testing Neos Sites and Users
+        run: |
+          ./flow cr:setup
+          ./flow site:importAll --package-key Neos.Demo --verbose
+          ./flow user:create --username=admin --password=admin --first-name=Admin --last-name=Admington --roles=Administrator || true
+
+      - name: Start flow server (in background)
+        run: |
+          chmod 777 Web/
+          ./flow resource:publish
+          ./flow server:run --port 8081 &
+
+      - name: Install dependencies and Playwright Browsers
+        run: |
+          cd "${{ env.PACKAGE_FOLDER }}"
+          npm ci
+          npx playwright install --with-deps
+
+      - name: Run single flow command to prevent playwright timeouts due to an empty flow cache
+        run: ./flow sandstorm.neosapi:testingHelper:contentEditingUri username
+
+      - name: Run Playwright tests
+        run: |
+          cd "${{ env.PACKAGE_FOLDER }}"
+          npx playwright test
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: "${{env.DISTRIBUTION_FOLDER}}/${{ env.PACKAGE_FOLDER }}/playwright-report/"
+          retention-days: 30
