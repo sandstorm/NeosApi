@@ -64,3 +64,9 @@ export async function getCurrentNodeAggregateId(page: Page): Promise<string | un
   // see Neos.Neos.Ui/packages/neos-ui-redux-store/src/CR/Nodes/selectors.ts
   return state?.cr?.nodes?.byContextPath[state?.cr?.nodes?.documentNode].identifier;
 }
+
+export async function getCurrentPreviewMode(page: Page): Promise<string | undefined> {
+  const state = await getReduxState(page);
+  // see Neos.Neos.Ui/packages/neos-ui-redux-store/src/UI/EditPreviewMode/index.ts
+  return state?.ui?.editPreviewMode;
+}

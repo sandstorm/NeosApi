@@ -22,6 +22,7 @@ use Neos\Neos\Domain\Repository\WorkspaceMetadataAndRoleRepository;
 use Neos\Neos\Domain\Service\UserService;
 use Neos\Neos\Domain\Service\WorkspaceService;
 use Sandstorm\NeosApiClient\Internal\NodeCreation;
+use Sandstorm\NeosApiClient\Internal\PreviewMode;
 use Sandstorm\NeosApiClient\NeosApiClient;
 
 class TestingHelperCommandController extends CommandController
@@ -204,6 +205,15 @@ class TestingHelperCommandController extends CommandController
             ->buildUri();
     }
 
+    public function contentEditingUriWithPreviewModeCommand(string $user, string $previewMode): string
+    {
+        $previewMode = PreviewMode::fromString($previewMode);
+
+        return $this->getNeosApi()->ui->contentEditing(userName: $user)
+            ->editPreviewMode($previewMode)
+            ->buildUri();
+    }
+
 
     public function embeddedContentModuleCommand(
         string $user,
@@ -272,10 +282,10 @@ class TestingHelperCommandController extends CommandController
             $this->getNeosApi()->ui
                 ->contentEditing(userName: $user)
                 ->hideMainMenu()
-                ->documentNode('product-foo') # node ID
-                ->dimension('....')
-                ->editPreviewMode('mobile')
+                ->node('product-foo') # node ID
+                ->dimensions(['....'])
                 ->minimalUi()
+                ->editPreviewMode('mobile')
                 ->buildUri()
         );
 

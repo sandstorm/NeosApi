@@ -16,8 +16,8 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Neos\Flow\Configuration\ConfigurationManager;
 use Neos\Flow\Mvc\Controller\ActionController;
+use Neos\Flow\Persistence\Doctrine\PersistenceManager;
 use Neos\Flow\Security\Context;
-use Neos\Flow\Session\SessionManager;
 use Neos\Neos\Domain\Repository\SiteRepository;
 use Neos\Neos\Domain\Service\NodeTypeNameFactory;
 use Neos\Neos\Domain\Service\UserService;
@@ -56,6 +56,9 @@ class EmbeddedBackendApiController extends ActionController
 
     #[Flow\Inject]
     protected UserService $userService;
+
+    #[Flow\Inject]
+    protected PersistenceManager $persistenceManager;
 
     private function getBaseNodeAddress(string $userName): NodeAddress
     {
@@ -108,7 +111,6 @@ class EmbeddedBackendApiController extends ActionController
                 $jwt = $token->getCredentials()['jwt'];
                 $decoded = JWT::decode($jwt, new Key($secret, 'HS256'));
 
-
                 $priority = fn($class) => match($class) {
                     SwitchBaseWorkspaceLoginCommand::class => 0,
                     SwitchDimensionLoginCommand::class => 0,
@@ -134,7 +136,7 @@ class EmbeddedBackendApiController extends ActionController
                         SwitchEditedNodeLoginCommand::class =>
                             $nodeAddress = $this->handleSwitchEditedNode($command, $nodeAddress),
                         AdaptNeosUiLoginCommand::class =>
-                            $this->handleAdaptNeosUi($command, $uiSessionInfo),
+                            $this->handleAdaptNeosUi($command, $decoded->sub, $uiSessionInfo),
                     };
                 }
 
@@ -229,10 +231,18 @@ class EmbeddedBackendApiController extends ActionController
 
     function handleAdaptNeosUi(
         AdaptNeosUiLoginCommand $command,
+        string $userName,
         UiSessionInfo $uiSessionInfo,
     )
     {
         $uiSessionInfo->showMainMenu = $command->showMainMenu ?? $uiSessionInfo->showMainMenu;
         $uiSessionInfo->showLeftSideBar = $command->showLeftSideBar ?? $uiSessionInfo->showLeftSideBar;
+        if($command->previewMode !== null) {
+            $previewMode = $command->previewMode->value;
+            $user = $this->userService->getUser($userName, 'Sandstorm.NeosApi');
+            $user->getPreferences()->set("contentEditing.editPreviewMode", $previewMode);
+            $this->userService->updateUser($user);
+            $this->persistenceManager->persistAll();
+        }
     }
 }

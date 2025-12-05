@@ -4,6 +4,7 @@ import {
   getCurrentBaseWorkspace,
   getCurrentDimensionValue,
   getCurrentNodeAggregateId,
+  getCurrentPreviewMode,
   getLoggedInUserName,
   makeReduxStoreAccessibleForTesting
 } from "./util/reduxStore";
@@ -155,4 +156,22 @@ test('Log in via JWT can reduce the editing ui to the bare minimum', async ({ pa
   // actual test cases
   await expect(page.locator('#neos-MenuToggler')).toHaveCount(0);
   await expect(page.locator('#neos-LeftSideBarToggler')).toHaveCount(0);
+});
+
+test('Log in via JWT can set the preview mode', async ({ page }) => {
+  console.log(flow('sandstorm.neosapi:testingHelper:removeUserIfExists test-preview-mode'));
+
+  const jwtNodeMobile = flow('sandstorm.neosapi:testingHelper:contentEditingUriWithPreviewMode' +
+    ' --user=test-preview-mode' +
+    ' --previewMode=mobile');
+
+  const jwtNodeDesktop = flow('sandstorm.neosapi:testingHelper:contentEditingUriWithPreviewMode' +
+    ' --user=test-preview-mode' +
+    ' --previewMode=desktop');
+
+  await page.goto(jwtNodeMobile);
+  expect(await getCurrentPreviewMode(page)).toBe('mobile');
+
+  await page.goto(jwtNodeDesktop);
+  expect(await getCurrentPreviewMode(page)).toBe('desktop');
 });
