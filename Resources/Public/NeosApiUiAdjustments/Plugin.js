@@ -209,6 +209,29 @@
     }
   });
 
+  // Resources/Private/NeosApiUiAdjustments/WrappedPublishDropDown.js
+  function wrappedPublishDropDownFactory(OriginalPublishDropDown) {
+    class wrappedPublishDropDown extends import_react5.PureComponent {
+      render() {
+        const { showPublishDropDown } = this.props;
+        if (showPublishDropDown) {
+          return /* @__PURE__ */ import_react5.default.createElement(OriginalPublishDropDown, null);
+        }
+        return null;
+      }
+    }
+    return (0, import_neos_ui_decorators5.neos)((globalRegistry) => ({
+      showPublishDropDown: globalRegistry.get("frontendConfiguration").get("Sandstorm.NeosApi").showPublishDropDown
+    }))(wrappedPublishDropDown);
+  }
+  var import_react5, import_neos_ui_decorators5;
+  var init_WrappedPublishDropDown = __esm({
+    "Resources/Private/NeosApiUiAdjustments/WrappedPublishDropDown.js"() {
+      import_react5 = __toESM(require_react());
+      import_neos_ui_decorators5 = __toESM(require_neos_ui_decorators());
+    }
+  });
+
   // node_modules/@neos-project/neos-ui-extensibility/dist/shims/vendor/redux-saga-effects/index.js
   var require_redux_saga_effects = __commonJS({
     "node_modules/@neos-project/neos-ui-extensibility/dist/shims/vendor/redux-saga-effects/index.js"(exports, module) {
@@ -252,6 +275,7 @@
       init_WrappedLeftSideBar();
       init_WrappedEditPreviewDropDown();
       init_WrappedDimensionSwitcher();
+      init_WrappedPublishDropDown();
       init_notifyOnPublishSaga();
       dist_default("Sandstorm.NeosApi", {}, (globalRegistry) => {
         const containerRegistry = globalRegistry.get("containers");
@@ -263,6 +287,7 @@
         wrapContainer("LeftSideBar", wrappedLeftSideBarFactory);
         wrapContainer("PrimaryToolbar/Right/EditPreviewDropDown", wrappedEditPreviewDropDownFactory);
         wrapContainer("PrimaryToolbar/Right/DimensionSwitcher", wrappedDimensionSwitcherFactory);
+        wrapContainer("PrimaryToolbar/Right/PublishDropDown", wrappedPublishDropDownFactory);
         const sagaRegistry = globalRegistry.get("sagas");
         sagaRegistry.set("Sandstorm:NeosApi:notifyOnPublishSaga", { saga: notifyOnPublishSaga });
       });
