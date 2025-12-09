@@ -44,6 +44,7 @@ Neos:
           showMainMenu: '${Sandstorm.NeosApi.Internal.UiAdjustments.showMainMenu()}'
           showLeftSideBar: '${Sandstorm.NeosApi.Internal.UiAdjustments.showLeftSideBar()}'
           showEditPreviewDropDown: '${Sandstorm.NeosApi.Internal.UiAdjustments.showEditPreviewDropDown()}'
+          showDimensionSwitcher: '${Sandstorm.NeosApi.Internal.UiAdjustments.showDimensionSwitcher()}'
 
 
 Sandstorm:

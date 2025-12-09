@@ -24,6 +24,10 @@ class UiAdjustmentsHelper implements ProtectedContextAwareInterface
         return $this->uiSessionInfoService->getUiSessionInfo()->showEditPreviewDropDown;
     }
 
+    public function showDimensionSwitcher() {
+        return $this->uiSessionInfoService->getUiSessionInfo()->showDimensionSwitcher;
+    }
+
     public function allowsCallOfMethod($methodName) {
         return true;
     }

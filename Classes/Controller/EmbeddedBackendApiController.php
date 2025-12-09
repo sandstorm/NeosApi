@@ -238,6 +238,7 @@ class EmbeddedBackendApiController extends ActionController
         $uiSessionInfo->showMainMenu = $command->showMainMenu ?? $uiSessionInfo->showMainMenu;
         $uiSessionInfo->showLeftSideBar = $command->showLeftSideBar ?? $uiSessionInfo->showLeftSideBar;
         $uiSessionInfo->showEditPreviewDropDown = $command->showEditPreviewDropDown ?? $uiSessionInfo->showEditPreviewDropDown;
+        $uiSessionInfo->showDimensionSwitcher = $command->showDimensionSwitcher ?? $uiSessionInfo->showDimensionSwitcher;
 
         if($command->previewMode !== null) {
             $previewMode = $command->previewMode->value;

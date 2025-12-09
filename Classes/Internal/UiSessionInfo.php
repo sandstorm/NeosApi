@@ -10,6 +10,7 @@ class UiSessionInfo
     public bool $showMainMenu;
     public bool $showLeftSideBar;
     public bool $showEditPreviewDropDown;
+    public bool $showDimensionSwitcher;
 
     function __construct()
     {
@@ -20,5 +21,6 @@ class UiSessionInfo
         $this->showMainMenu = true;
         $this->showLeftSideBar = true;
         $this->showEditPreviewDropDown = true;
+        $this->showDimensionSwitcher = true;
     }
 }

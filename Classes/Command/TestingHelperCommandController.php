@@ -221,6 +221,12 @@ class TestingHelperCommandController extends CommandController
             ->buildUri();
     }
 
+    public function contentEditingUriWithHiddenDimensionSwitcherCommand(string $user): string
+    {
+        return $this->getNeosApi()->ui->contentEditing(userName: $user)
+            ->hideDimensionSwitcher()
+            ->buildUri();
+    }
 
     public function embeddedContentModuleCommand(
         string $user,

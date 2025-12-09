@@ -186,6 +186,29 @@
     }
   });
 
+  // Resources/Private/NeosApiUiAdjustments/WrappedDimensionSwitcher.js
+  function wrappedDimensionSwitcherFactory(OriginalDimensionSwitcher) {
+    class wrappedDimensionSwitcher extends import_react4.PureComponent {
+      render() {
+        const { showDimensionSwitcher } = this.props;
+        if (showDimensionSwitcher) {
+          return /* @__PURE__ */ import_react4.default.createElement(OriginalDimensionSwitcher, null);
+        }
+        return null;
+      }
+    }
+    return (0, import_neos_ui_decorators4.neos)((globalRegistry) => ({
+      showDimensionSwitcher: globalRegistry.get("frontendConfiguration").get("Sandstorm.NeosApi").showDimensionSwitcher
+    }))(wrappedDimensionSwitcher);
+  }
+  var import_react4, import_neos_ui_decorators4;
+  var init_WrappedDimensionSwitcher = __esm({
+    "Resources/Private/NeosApiUiAdjustments/WrappedDimensionSwitcher.js"() {
+      import_react4 = __toESM(require_react());
+      import_neos_ui_decorators4 = __toESM(require_neos_ui_decorators());
+    }
+  });
+
   // Resources/Private/NeosApiUiAdjustments/manifest.js
   var require_manifest = __commonJS({
     "Resources/Private/NeosApiUiAdjustments/manifest.js"() {
@@ -193,6 +216,7 @@
       init_WrappedMenuToggler();
       init_WrappedLeftSideBar();
       init_WrappedEditPreviewDropDown();
+      init_WrappedDimensionSwitcher();
       dist_default("Sandstorm.NeosApi", {}, (globalRegistry) => {
         const containerRegistry = globalRegistry.get("containers");
         const wrapContainer = (name, wrapperFactory) => {
@@ -202,6 +226,7 @@
         wrapContainer("PrimaryToolbar/Left/MenuToggler", wrappedMenuTogglerFactory);
         wrapContainer("LeftSideBar", wrappedLeftSideBarFactory);
         wrapContainer("PrimaryToolbar/Right/EditPreviewDropDown", wrappedEditPreviewDropDownFactory);
+        wrapContainer("PrimaryToolbar/Right/DimensionSwitcher", wrappedDimensionSwitcherFactory);
       });
     }
   });
