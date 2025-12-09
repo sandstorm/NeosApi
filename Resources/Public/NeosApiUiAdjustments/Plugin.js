@@ -209,6 +209,29 @@
     }
   });
 
+  // Resources/Private/NeosApiUiAdjustments/WrappedPublishDropDown.js
+  function wrappedPublishDropDownFactory(OriginalPublishDropDown) {
+    class wrappedPublishDropDown extends import_react5.PureComponent {
+      render() {
+        const { showPublishDropDown } = this.props;
+        if (showPublishDropDown) {
+          return /* @__PURE__ */ import_react5.default.createElement(OriginalPublishDropDown, null);
+        }
+        return null;
+      }
+    }
+    return (0, import_neos_ui_decorators5.neos)((globalRegistry) => ({
+      showPublishDropDown: globalRegistry.get("frontendConfiguration").get("Sandstorm.NeosApi").showPublishDropDown
+    }))(wrappedPublishDropDown);
+  }
+  var import_react5, import_neos_ui_decorators5;
+  var init_WrappedPublishDropDown = __esm({
+    "Resources/Private/NeosApiUiAdjustments/WrappedPublishDropDown.js"() {
+      import_react5 = __toESM(require_react());
+      import_neos_ui_decorators5 = __toESM(require_neos_ui_decorators());
+    }
+  });
+
   // Resources/Private/NeosApiUiAdjustments/manifest.js
   var require_manifest = __commonJS({
     "Resources/Private/NeosApiUiAdjustments/manifest.js"() {
@@ -217,6 +240,7 @@
       init_WrappedLeftSideBar();
       init_WrappedEditPreviewDropDown();
       init_WrappedDimensionSwitcher();
+      init_WrappedPublishDropDown();
       dist_default("Sandstorm.NeosApi", {}, (globalRegistry) => {
         const containerRegistry = globalRegistry.get("containers");
         const wrapContainer = (name, wrapperFactory) => {
@@ -227,6 +251,7 @@
         wrapContainer("LeftSideBar", wrappedLeftSideBarFactory);
         wrapContainer("PrimaryToolbar/Right/EditPreviewDropDown", wrappedEditPreviewDropDownFactory);
         wrapContainer("PrimaryToolbar/Right/DimensionSwitcher", wrappedDimensionSwitcherFactory);
+        wrapContainer("PrimaryToolbar/Right/PublishDropDown", wrappedPublishDropDownFactory);
       });
     }
   });

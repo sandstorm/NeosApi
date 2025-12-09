@@ -170,6 +170,19 @@ test('Log in via JWT can hide the dimension switcher', async ({ page }) => {
   await expect(page.locator("xpath=//div[contains(@class, 'dimensionSwitcherDropDown')]")).toHaveCount(0);
 });
 
+test('Log in via JWT can hide the publish drop down', async ({ page }) => {
+  console.log(flow('sandstorm.neosapi:testingHelper:removeUserIfExists test-11'));
+
+  const jwtNode = flow('sandstorm.neosapi:testingHelper:contentEditingUriWithHiddenPublishDropDown' +
+    ' --user=test-11');
+
+  await page.goto(jwtNode);
+  // wait for page to load
+  await expect(page.locator('#neos-application')).toHaveCount(1);
+  // actual test case
+  await expect(page.locator("#neos-PublishDropDown")).toHaveCount(0);
+});
+
 test('Log in via JWT can reduce the editing ui to the bare minimum', async ({ page }) => {
   console.log(flow('sandstorm.neosapi:testingHelper:removeUserIfExists test-minimal-ui'));
 
@@ -184,6 +197,7 @@ test('Log in via JWT can reduce the editing ui to the bare minimum', async ({ pa
   await expect(page.locator('#neos-LeftSideBarToggler')).toHaveCount(0);
   await expect(page.locator("xpath=//span[contains(@class, 'dropDown__currentEditMode')]")).toHaveCount(0);
   await expect(page.locator("xpath=//div[contains(@class, 'dimensionSwitcherDropDown')]")).toHaveCount(0);
+  await expect(page.locator("#neos-PublishDropDown")).toHaveCount(0);
 });
 
 test('Log in via JWT can set the preview mode', async ({ page }) => {
