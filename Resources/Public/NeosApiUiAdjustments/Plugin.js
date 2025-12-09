@@ -163,12 +163,36 @@
     }
   });
 
+  // Resources/Private/NeosApiUiAdjustments/WrappedEditPreviewDropDown.js
+  function wrappedEditPreviewDropDownFactory(OriginalEditPreviewDropDown) {
+    class WrappedEditPreviewDropDown extends import_react3.PureComponent {
+      render() {
+        const { showEditPreviewDropDown } = this.props;
+        if (showEditPreviewDropDown) {
+          return /* @__PURE__ */ import_react3.default.createElement(OriginalEditPreviewDropDown, null);
+        }
+        return null;
+      }
+    }
+    return (0, import_neos_ui_decorators3.neos)((globalRegistry) => ({
+      showEditPreviewDropDown: globalRegistry.get("frontendConfiguration").get("Sandstorm.NeosApi").showEditPreviewDropDown
+    }))(WrappedEditPreviewDropDown);
+  }
+  var import_react3, import_neos_ui_decorators3;
+  var init_WrappedEditPreviewDropDown = __esm({
+    "Resources/Private/NeosApiUiAdjustments/WrappedEditPreviewDropDown.js"() {
+      import_react3 = __toESM(require_react());
+      import_neos_ui_decorators3 = __toESM(require_neos_ui_decorators());
+    }
+  });
+
   // Resources/Private/NeosApiUiAdjustments/manifest.js
   var require_manifest = __commonJS({
     "Resources/Private/NeosApiUiAdjustments/manifest.js"() {
       init_dist();
       init_WrappedMenuToggler();
       init_WrappedLeftSideBar();
+      init_WrappedEditPreviewDropDown();
       dist_default("Sandstorm.NeosApi", {}, (globalRegistry) => {
         const containerRegistry = globalRegistry.get("containers");
         const wrapContainer = (name, wrapperFactory) => {
@@ -177,6 +201,7 @@
         };
         wrapContainer("PrimaryToolbar/Left/MenuToggler", wrappedMenuTogglerFactory);
         wrapContainer("LeftSideBar", wrappedLeftSideBarFactory);
+        wrapContainer("PrimaryToolbar/Right/EditPreviewDropDown", wrappedEditPreviewDropDownFactory);
       });
     }
   });

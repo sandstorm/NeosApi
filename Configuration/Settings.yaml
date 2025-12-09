@@ -43,6 +43,7 @@ Neos:
         'Sandstorm.NeosApi':
           showMainMenu: '${Sandstorm.NeosApi.Internal.UiAdjustments.showMainMenu()}'
           showLeftSideBar: '${Sandstorm.NeosApi.Internal.UiAdjustments.showLeftSideBar()}'
+          showEditPreviewDropDown: '${Sandstorm.NeosApi.Internal.UiAdjustments.showEditPreviewDropDown()}'
 
 
 Sandstorm:

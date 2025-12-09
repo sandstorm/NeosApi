@@ -237,6 +237,8 @@ class EmbeddedBackendApiController extends ActionController
     {
         $uiSessionInfo->showMainMenu = $command->showMainMenu ?? $uiSessionInfo->showMainMenu;
         $uiSessionInfo->showLeftSideBar = $command->showLeftSideBar ?? $uiSessionInfo->showLeftSideBar;
+        $uiSessionInfo->showEditPreviewDropDown = $command->showEditPreviewDropDown ?? $uiSessionInfo->showEditPreviewDropDown;
+
         if($command->previewMode !== null) {
             $previewMode = $command->previewMode->value;
             $user = $this->userService->getUser($userName, 'Sandstorm.NeosApi');

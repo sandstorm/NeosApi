@@ -9,6 +9,7 @@ class UiSessionInfo
 {
     public bool $showMainMenu;
     public bool $showLeftSideBar;
+    public bool $showEditPreviewDropDown;
 
     function __construct()
     {
@@ -18,5 +19,6 @@ class UiSessionInfo
     function reset() {
         $this->showMainMenu = true;
         $this->showLeftSideBar = true;
+        $this->showEditPreviewDropDown = true;
     }
 }

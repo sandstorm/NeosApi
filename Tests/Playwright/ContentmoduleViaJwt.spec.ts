@@ -144,6 +144,19 @@ test('Log in via JWT can hide the sidebar', async ({ page }) => {
   await expect(page.locator('#neos-LeftSideBarToggler')).toHaveCount(0);
 });
 
+test('Log in via JWT can hide the edit preview mode drop down', async ({ page }) => {
+  console.log(flow('sandstorm.neosapi:testingHelper:removeUserIfExists test-9'));
+
+  const jwtNode = flow('sandstorm.neosapi:testingHelper:contentEditingUriWithHiddenEditPreviewModeDropDown' +
+    ' --user=test-9');
+
+  await page.goto(jwtNode);
+  // wait for page to load
+  await expect(page.locator('#neos-application')).toHaveCount(1);
+  // actual test case
+  await expect(page.locator("xpath=//span[contains(@class, 'dropDown__currentEditMode')]")).toHaveCount(0);
+});
+
 test('Log in via JWT can reduce the editing ui to the bare minimum', async ({ page }) => {
   console.log(flow('sandstorm.neosapi:testingHelper:removeUserIfExists test-minimal-ui'));
 
@@ -156,6 +169,7 @@ test('Log in via JWT can reduce the editing ui to the bare minimum', async ({ pa
   // actual test cases
   await expect(page.locator('#neos-MenuToggler')).toHaveCount(0);
   await expect(page.locator('#neos-LeftSideBarToggler')).toHaveCount(0);
+  await expect(page.locator("xpath=//span[contains(@class, 'dropDown__currentEditMode')]")).toHaveCount(0);
 });
 
 test('Log in via JWT can set the preview mode', async ({ page }) => {

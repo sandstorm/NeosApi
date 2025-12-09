@@ -1,6 +1,7 @@
 import manifest from '@neos-project/neos-ui-extensibility';
 import {wrappedMenuTogglerFactory} from './WrappedMenuToggler';
 import {wrappedLeftSideBarFactory} from './WrappedLeftSideBar';
+import {wrappedEditPreviewDropDownFactory} from './WrappedEditPreviewDropDown'
 
 manifest('Sandstorm.NeosApi', {}, (globalRegistry) => {
 	// Registry definitions:
@@ -15,6 +16,7 @@ manifest('Sandstorm.NeosApi', {}, (globalRegistry) => {
 
 	wrapContainer('PrimaryToolbar/Left/MenuToggler', wrappedMenuTogglerFactory);
 	wrapContainer('LeftSideBar', wrappedLeftSideBarFactory);
+	wrapContainer('PrimaryToolbar/Right/EditPreviewDropDown', wrappedEditPreviewDropDownFactory);
 });
 
 

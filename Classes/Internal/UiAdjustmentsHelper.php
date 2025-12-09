@@ -20,6 +20,10 @@ class UiAdjustmentsHelper implements ProtectedContextAwareInterface
         return $this->uiSessionInfoService->getUiSessionInfo()->showLeftSideBar;
     }
 
+    public function showEditPreviewDropDown() {
+        return $this->uiSessionInfoService->getUiSessionInfo()->showEditPreviewDropDown;
+    }
+
     public function allowsCallOfMethod($methodName) {
         return true;
     }

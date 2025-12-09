@@ -214,6 +214,13 @@ class TestingHelperCommandController extends CommandController
             ->buildUri();
     }
 
+    public function contentEditingUriWithHiddenEditPreviewModeDropDownCommand(string $user): string
+    {
+        return $this->getNeosApi()->ui->contentEditing(userName: $user)
+            ->hideEditPreviewDropDown()
+            ->buildUri();
+    }
+
 
     public function embeddedContentModuleCommand(
         string $user,
