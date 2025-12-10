@@ -1,0 +1,88 @@
+import React, {PureComponent} from 'react';
+import PropTypes from 'prop-types';
+import mergeClassNames from 'classnames';
+import {connect} from 'react-redux';
+
+import {actions, selectors} from '@neos-project/neos-ui-redux-store';
+
+import {IconButton, SideBar} from '@neos-project/react-ui-components';
+import {neos} from '@neos-project/neos-ui-decorators';
+
+import style from './index.css';
+
+@neos(globalRegistry => ({
+	containerRegistry: globalRegistry.get('containers'),
+	i18nRegistry: globalRegistry.get('i18n')
+}))
+@connect(state => ({
+	isHidden: state?.ui?.leftSideBar?.isHidden,
+	isFullScreen: state?.ui?.fullScreen?.isFullScreen,
+	isHiddenContentTree: state?.ui?.leftSideBar?.contentTree?.isHidden,
+	siteNode: selectors.CR.Nodes.siteNodeSelector(state),
+	documentNode: selectors.CR.Nodes.documentNodeSelector(state)
+}), {
+	toggleSidebar: actions.UI.LeftSideBar.toggle
+})
+export class LeftSideBarWithoutDocumentTree extends PureComponent {
+	static propTypes = {
+		containerRegistry: PropTypes.object.isRequired,
+		i18nRegistry: PropTypes.object.isRequired,
+
+		isHidden: PropTypes.bool.isRequired,
+		isHiddenContentTree: PropTypes.bool.isRequired,
+		toggleSidebar: PropTypes.func.isRequired
+	};
+
+	handleToggle = () => {
+		const {toggleSidebar} = this.props;
+
+		toggleSidebar();
+	}
+
+	render() {
+		const {isHidden, isFullScreen, isHiddenContentTree, containerRegistry, i18nRegistry} = this.props;
+
+		const classNames = mergeClassNames({
+			[style.leftSideBar]: true,
+			[style['leftSideBar--isHidden']]: isHidden || isFullScreen
+		});
+
+		const contentTreeWrapperClassNames = mergeClassNames({
+			[style.leftSideBar__top]: true,
+		});
+
+		const LeftSideBarBottom = containerRegistry.getChildren('LeftSideBar/Bottom');
+
+		const ContentTreeToolbar = containerRegistry.get('LeftSideBar/ContentTreeToolbar');
+
+		const toggleIcon = isHidden ? 'chevron-circle-right' : 'chevron-circle-left';
+		const toggle = isFullScreen ? null : (
+			<IconButton
+				id="neos-LeftSideBarToggler"
+				icon={toggleIcon}
+				className={style.leftSideBar__toggleBtn}
+				hoverStyle="clean"
+				title={i18nRegistry.translate('Neos.Neos:Main:navigate')}
+			/>
+		);
+
+		return (
+			<React.Fragment>
+				<div role="button" className={style.leftSideBar__header} onClick={this.handleToggle}>
+					{toggle}
+					{!isHidden && !isFullScreen && i18nRegistry.translate('Neos.Neos:Main:documentTree', 'Document Tree')}
+				</div>
+				<SideBar
+					position="left"
+					className={classNames}
+					aria-hidden={isHidden ? 'true' : 'false'}
+				>
+					<div className={contentTreeWrapperClassNames}>
+						<ContentTreeToolbar/>
+						{!isHidden && !isHiddenContentTree && LeftSideBarBottom.map((Item, key) => <Item key={key}/>)}
+					</div>
+				</SideBar>
+			</React.Fragment>
+		);
+	}
+}

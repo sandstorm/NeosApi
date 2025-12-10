@@ -43,6 +43,7 @@ Neos:
         'Sandstorm.NeosApi':
           showMainMenu: '${Sandstorm.NeosApi.Internal.UiAdjustments.showMainMenu()}'
           showLeftSideBar: '${Sandstorm.NeosApi.Internal.UiAdjustments.showLeftSideBar()}'
+          showDocumentTree: '${Sandstorm.NeosApi.Internal.UiAdjustments.showDocumentTree()}'
           showEditPreviewDropDown: '${Sandstorm.NeosApi.Internal.UiAdjustments.showEditPreviewDropDown()}'
           showDimensionSwitcher: '${Sandstorm.NeosApi.Internal.UiAdjustments.showDimensionSwitcher()}'
           notifyOnPublishTarget: '${Sandstorm.NeosApi.Internal.UiAdjustments.notifyOnPublishTarget()}'

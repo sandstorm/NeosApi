@@ -9,6 +9,7 @@ class UiSessionInfo
 {
     public bool $showMainMenu;
     public bool $showLeftSideBar;
+    public bool $showDocumentTree;
     public bool $showEditPreviewDropDown;
     public bool $showDimensionSwitcher;
     public ?string $notifyOnPublishTarget;
@@ -21,6 +22,7 @@ class UiSessionInfo
     function reset() {
         $this->showMainMenu = true;
         $this->showLeftSideBar = true;
+        $this->showDocumentTree = true;
         $this->showEditPreviewDropDown = true;
         $this->showDimensionSwitcher = true;
         $this->notifyOnPublishTarget = null;

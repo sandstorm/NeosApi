@@ -237,6 +237,7 @@ class EmbeddedBackendApiController extends ActionController
     {
         $uiSessionInfo->showMainMenu = $command->showMainMenu ?? $uiSessionInfo->showMainMenu;
         $uiSessionInfo->showLeftSideBar = $command->showLeftSideBar ?? $uiSessionInfo->showLeftSideBar;
+        $uiSessionInfo->showDocumentTree = $command->showDocumentTree ?? $uiSessionInfo->showDocumentTree;
         $uiSessionInfo->showEditPreviewDropDown = $command->showEditPreviewDropDown ?? $uiSessionInfo->showEditPreviewDropDown;
         $uiSessionInfo->showDimensionSwitcher = $command->showDimensionSwitcher ?? $uiSessionInfo->showDimensionSwitcher;
         $uiSessionInfo->notifyOnPublishTarget = $command->notifyOnPublishTarget ?? $uiSessionInfo->notifyOnPublishTarget;

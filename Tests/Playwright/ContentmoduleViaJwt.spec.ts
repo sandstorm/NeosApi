@@ -198,6 +198,22 @@ test('Log in via JWT can trigger parent window notifications when publishing fin
   await expect.poll(() => messagesPromise.first, { timeout: 5000}).toBeTruthy();
 });
 
+test.fail.only('Log in via JWT can hide the document tree', async ({ page }) => {
+  console.log(flow('sandstorm.neosapi:testingHelper:removeUserIfExists test-10'));
+
+  const jwtNode = flow('sandstorm.neosapi:testingHelper:contentEditingUriWithHiddenDocumentTree' +
+    ' --user=test-12');
+
+  await page.goto(jwtNode);
+  // wait for page to load
+  await expect(page.locator('#neos-application')).toHaveCount(1);
+  // actual test case
+  const sideBarTop = page.locator("xpath=//div[contains(@class, 'leftSideBar__top')]");
+  await expect(sideBarTop.locator("xpath=//div[contains(@class, 'toolBar')]")).toHaveCount(0);
+  await expect(sideBarTop.locator("xpath=//div[contains(@class, 'searchWrapper')]")).toHaveCount(0);
+  await expect(sideBarTop.locator("xpath=//div[contains(@class, 'treeWrapper')]")).toHaveCount(0);
+});
+
 test('Log in via JWT can reduce the editing ui to the bare minimum', async ({ page }) => {
   console.log(flow('sandstorm.neosapi:testingHelper:removeUserIfExists test-minimal-ui'));
 

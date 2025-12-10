@@ -198,6 +198,13 @@ class TestingHelperCommandController extends CommandController
             ->buildUri();
     }
 
+    public function contentEditingUriWithHiddenDocumentTreeCommand(string $user): string
+    {
+        return $this->getNeosApi()->ui->contentEditing(userName: $user)
+            ->hideDocumentTree()
+            ->buildUri();
+    }
+
     public function contentEditingUriWithMinimalUiCommand(string $user): string
     {
         return $this->getNeosApi()->ui->contentEditing(userName: $user)
