@@ -124,7 +124,7 @@ test('The order of JWT LoginCommands should not change their semantics', async (
 test('Log in via JWT can hide the main menu', async ({ page }) => {
   console.log(flow('sandstorm.neosapi:testingHelper:removeUserIfExists test-8'));
 
-  const jwtNode = flow('sandstorm.neosapi:testingHelper:contentEditingWithHiddenMainMenu' +
+  const jwtNode = flow('sandstorm.neosapi:testingHelper:contentEditingUriWithHiddenMainMenu' +
     ' --user=test-8');
 
   await page.goto(jwtNode);
@@ -137,7 +137,7 @@ test('Log in via JWT can hide the main menu', async ({ page }) => {
 test('Log in via JWT can hide the sidebar', async ({ page }) => {
   console.log(flow('sandstorm.neosapi:testingHelper:removeUserIfExists test-8'));
 
-  const jwtNode = flow('sandstorm.neosapi:testingHelper:contentEditingWithHiddenLeftSideBar' +
+  const jwtNode = flow('sandstorm.neosapi:testingHelper:contentEditingUriWithHiddenLeftSideBar' +
     ' --user=test-8');
 
   await page.goto(jwtNode);
@@ -201,7 +201,7 @@ test('Log in via JWT can trigger parent window notifications when publishing fin
 test('Log in via JWT can reduce the editing ui to the bare minimum', async ({ page }) => {
   console.log(flow('sandstorm.neosapi:testingHelper:removeUserIfExists test-minimal-ui'));
 
-  const jwtNode = flow('sandstorm.neosapi:testingHelper:contentEditingWithMinimalUi' +
+  const jwtNode = flow('sandstorm.neosapi:testingHelper:contentEditingUriWithMinimalUi' +
     ' --user=test-minimal-ui');
 
   await page.goto(jwtNode);

@@ -184,21 +184,21 @@ class TestingHelperCommandController extends CommandController
             ->buildUri();
     }
 
-    public function contentEditingWithHiddenMainMenuCommand(string $user): string
+    public function contentEditingUriWithHiddenMainMenuCommand(string $user): string
     {
         return $this->getNeosApi()->ui->contentEditing(userName: $user)
             ->hideMainMenu()
             ->buildUri();
     }
 
-    public function contentEditingWithHiddenLeftSideBarCommand(string $user): string
+    public function contentEditingUriWithHiddenLeftSideBarCommand(string $user): string
     {
         return $this->getNeosApi()->ui->contentEditing(userName: $user)
             ->hideLeftSideBar()
             ->buildUri();
     }
 
-    public function contentEditingWithMinimalUiCommand(string $user): string
+    public function contentEditingUriWithMinimalUiCommand(string $user): string
     {
         return $this->getNeosApi()->ui->contentEditing(userName: $user)
             ->minimalUi()
@@ -233,100 +233,6 @@ class TestingHelperCommandController extends CommandController
         return $this->getNeosApi()->ui->contentEditing(userName: $user)
             ->hideDimensionSwitcher()
             ->buildUri();
-    }
-
-    public function embeddedContentModuleCommand(
-        string $user,
-        string $workspace = 'live',
-    )
-    {
-        $this->outputLine('// Szenario: User ggf. anlegen; mit Zielworkspace-Override');
-        $this->outputLine(
-            $this->getNeosApi()->ui
-                ->contentEditing(userName: $user)
-                ->publishInto(workspace: 'live')
-                ->buildUri()
-        );
-
-        $this->outputLine("\n\n");
-
-        $this->outputLine('// Szenario: Dimension wählen');
-        $this->outputLine(
-            $this->getNeosApi()->ui
-                ->contentEditing(userName: $user)
-                ->publishInto(workspace: 'live')
-                ->dimensions(dimensions: ['language' => 'de'])
-                ->buildUri()
-        );
-
-        $this->outputLine(
-            $this->getNeosApi()->ui
-                ->contentEditing(userName: $user)
-                ->dimensions(dimensions: ['language' => 'en_UK'])
-                ->buildUri()
-        );
-
-        $this->outputLine("\n\n");
-
-        $this->outputLine('// Szenario: zu bestimmten Produkt-Node springen (user sieht aber weiterhin alles)');
-        $this->outputLine(
-            $this->getNeosApi()->ui
-                ->contentEditing(userName: $user)
-                ->dimensions(dimensions: ['language' => 'en_UK'])
-                ->node('14ccf43a-562a-c9f7-2fd1-733e27068524') # Text & images
-                ->buildUri()
-        );
-        $this->outputLine(
-            $this->getNeosApi()->ui
-                ->contentEditing(userName: $user)
-                ->dimensions(dimensions: ['language' => 'en_UK'])
-                ->node('82c24d81-51fa-87e5-b4ec-73eb505cb826') # Other elements
-                ->buildUri()
-        );
-
-        $this->outputLine("\n\n");
-
-        $this->outputLine('// Szenario: zu bestimmten Produkt-Node springen, und diesen ggf. neu anlegen if not existing (user sieht aber weiterhin alles)');
-        $this->outputLine(
-            $this->getNeosApi()->ui
-                ->contentEditing(userName: $user)
-                ->node('product-foo', createIfNotExisting: new NodeCreation(nodeType: '....', parentNodeId: '....')) # node ID
-                ->node('product-foo', createIfNotExisting: new NodeCreation(nodeType: '....')) # node ID -> parentNodeId -> könnte als Default am NodeType stehen. ("ProductsFolder"?
-                ->buildUri()
-        );
-
-        $this->outputLine("\n\n");
-
-        $this->outputLine('// bestimmte UI Elemente ein oder ausblenden');
-        $this->outputLine(
-            $this->getNeosApi()->ui
-                ->contentEditing(userName: $user)
-                ->hideMainMenu()
-                ->node('product-foo') # node ID
-                ->dimensions(['....'])
-                ->minimalUi()
-                ->editPreviewMode('mobile')
-                ->buildUri()
-        );
-
-        $this->outputLine("\n\n");
-
-        $this->outputLine('// Szenario: nur bestimmter Teilbaum sichtbar.');
-        $this->outputLine(
-            $this->getNeosApi()->ui
-                ->contentEditing(userName: $user)
-                ->nodeVisibility('product-foo') # subtreeTag
-                ->buildUri()
-        );
-
-        $this->outputLine("\n\n");
-
-
-        //->createNodeIfNotExisting(parent: ...)->forDocumentNode('my-product')->enableContentTree()->buildUri();
-
-
-        $this->outputLine($this->getNeosApi()->ui->contentEditing($user)->buildUri());
-        // echo NeosApiClient::create('http://127.0.0.1:8081')->embeddedContentModule()->buildUri();
     }
 
     /**
