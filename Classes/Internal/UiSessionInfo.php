@@ -11,6 +11,7 @@ class UiSessionInfo
     public bool $showLeftSideBar;
     public bool $showEditPreviewDropDown;
     public bool $showDimensionSwitcher;
+    public ?string $notifyOnPublishTarget;
 
     function __construct()
     {
@@ -22,5 +23,6 @@ class UiSessionInfo
         $this->showLeftSideBar = true;
         $this->showEditPreviewDropDown = true;
         $this->showDimensionSwitcher = true;
+        $this->notifyOnPublishTarget = null;
     }
 }

@@ -3,6 +3,7 @@ import {wrappedMenuTogglerFactory} from './WrappedMenuToggler';
 import {wrappedLeftSideBarFactory} from './WrappedLeftSideBar';
 import {wrappedEditPreviewDropDownFactory} from './WrappedEditPreviewDropDown';
 import {wrappedDimensionSwitcherFactory} from './WrappedDimensionSwitcher';
+import {notifyOnPublishSaga} from './notifyOnPublishSaga';
 
 manifest('Sandstorm.NeosApi', {}, (globalRegistry) => {
 	// Registry definitions:
@@ -19,6 +20,7 @@ manifest('Sandstorm.NeosApi', {}, (globalRegistry) => {
 	wrapContainer('LeftSideBar', wrappedLeftSideBarFactory);
 	wrapContainer('PrimaryToolbar/Right/EditPreviewDropDown', wrappedEditPreviewDropDownFactory);
 	wrapContainer('PrimaryToolbar/Right/DimensionSwitcher', wrappedDimensionSwitcherFactory);
+
+	const sagaRegistry = globalRegistry.get('sagas');
+	sagaRegistry.set('Sandstorm:NeosApi:notifyOnPublishSaga', { saga: notifyOnPublishSaga });
 });
-
-

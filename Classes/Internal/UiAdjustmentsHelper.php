@@ -28,6 +28,10 @@ class UiAdjustmentsHelper implements ProtectedContextAwareInterface
         return $this->uiSessionInfoService->getUiSessionInfo()->showDimensionSwitcher;
     }
 
+    public function notifyOnPublishTarget() {
+        return $this->uiSessionInfoService->getUiSessionInfo()->notifyOnPublishTarget;
+    }
+
     public function allowsCallOfMethod($methodName) {
         return true;
     }

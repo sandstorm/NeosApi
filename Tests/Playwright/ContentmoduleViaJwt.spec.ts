@@ -8,6 +8,9 @@ import {
   getLoggedInUserName,
   makeReduxStoreAccessibleForTesting
 } from "./util/reduxStore";
+import {
+  receiveMessages
+} from "./util/messages"
 
 function flow(command: string) {
   console.log("=== FLOW === " + command)
@@ -168,6 +171,31 @@ test('Log in via JWT can hide the dimension switcher', async ({ page }) => {
   await expect(page.locator('#neos-application')).toHaveCount(1);
   // actual test case
   await expect(page.locator("xpath=//div[contains(@class, 'dimensionSwitcherDropDown')]")).toHaveCount(0);
+});
+
+test('Log in via JWT can trigger parent window notifications when publishing finished', async ({ page }) => {
+  console.log(flow('sandstorm.neosapi:testingHelper:removeUserIfExists test-11'));
+
+  const jwtNode = flow('sandstorm.neosapi:testingHelper:contentEditingUriWithNotifyOnPublish' +
+    ' --user=test-11' +
+    ' --targetOrigin=*'
+  );
+
+  const messagesPromise = await receiveMessages(page, (event: MessageEvent) => event.data.type == "@neos/neos-ui/CR/Publishing/FINISHED");
+  await page.goto(jwtNode);
+
+  // publish
+  // use Math.random to ensure changes even when multiple tests run in parallel
+  await page.locator('#__neos__editor__property---titleOverride').fill(Date.now() + "-" + Math.random());
+  await page.locator('#neos-Inspector-Apply').click();
+  await page.locator('#neos-PublishDropDown-Publish').click();
+
+  // undo changes
+  await page.locator('#__neos__editor__property---titleOverride').fill('');
+  await page.locator('#neos-Inspector-Apply').click();
+  await page.locator('#neos-PublishDropDown-Publish').click();
+
+  await expect.poll(() => messagesPromise.first, { timeout: 5000}).toBeTruthy();
 });
 
 test('Log in via JWT can reduce the editing ui to the bare minimum', async ({ page }) => {

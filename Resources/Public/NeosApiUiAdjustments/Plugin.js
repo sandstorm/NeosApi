@@ -209,6 +209,41 @@
     }
   });
 
+  // node_modules/@neos-project/neos-ui-extensibility/dist/shims/vendor/redux-saga-effects/index.js
+  var require_redux_saga_effects = __commonJS({
+    "node_modules/@neos-project/neos-ui-extensibility/dist/shims/vendor/redux-saga-effects/index.js"(exports, module) {
+      init_readFromConsumerApi();
+      module.exports = readFromConsumerApi("vendor")().reduxSagaEffects;
+    }
+  });
+
+  // node_modules/@neos-project/neos-ui-extensibility/dist/shims/neosProjectPackages/neos-ui-redux-store/index.js
+  var require_neos_ui_redux_store = __commonJS({
+    "node_modules/@neos-project/neos-ui-extensibility/dist/shims/neosProjectPackages/neos-ui-redux-store/index.js"(exports, module) {
+      init_readFromConsumerApi();
+      module.exports = readFromConsumerApi("NeosProjectPackages")().NeosUiReduxStore;
+    }
+  });
+
+  // Resources/Private/NeosApiUiAdjustments/notifyOnPublishSaga.js
+  function* notifyOnPublishSaga({ globalRegistry }) {
+    const targetOrigin = globalRegistry.get("frontendConfiguration").get("Sandstorm.NeosApi").notifyOnPublishTarget;
+    if (targetOrigin) {
+      const notifyOnPublish = notifyOnPublishWithTargetOrigin(targetOrigin);
+      yield (0, import_effects.takeEvery)(import_neos_ui_redux_store.actionTypes.CR.Publishing.FINISHED, notifyOnPublish);
+    }
+  }
+  var import_effects, import_neos_ui_redux_store, notifyOnPublishWithTargetOrigin;
+  var init_notifyOnPublishSaga = __esm({
+    "Resources/Private/NeosApiUiAdjustments/notifyOnPublishSaga.js"() {
+      import_effects = __toESM(require_redux_saga_effects());
+      import_neos_ui_redux_store = __toESM(require_neos_ui_redux_store());
+      notifyOnPublishWithTargetOrigin = (targetOrigin) => function* (action) {
+        yield (0, import_effects.call)(() => parent.postMessage(action, targetOrigin));
+      };
+    }
+  });
+
   // Resources/Private/NeosApiUiAdjustments/manifest.js
   var require_manifest = __commonJS({
     "Resources/Private/NeosApiUiAdjustments/manifest.js"() {
@@ -217,6 +252,7 @@
       init_WrappedLeftSideBar();
       init_WrappedEditPreviewDropDown();
       init_WrappedDimensionSwitcher();
+      init_notifyOnPublishSaga();
       dist_default("Sandstorm.NeosApi", {}, (globalRegistry) => {
         const containerRegistry = globalRegistry.get("containers");
         const wrapContainer = (name, wrapperFactory) => {
@@ -227,6 +263,8 @@
         wrapContainer("LeftSideBar", wrappedLeftSideBarFactory);
         wrapContainer("PrimaryToolbar/Right/EditPreviewDropDown", wrappedEditPreviewDropDownFactory);
         wrapContainer("PrimaryToolbar/Right/DimensionSwitcher", wrappedDimensionSwitcherFactory);
+        const sagaRegistry = globalRegistry.get("sagas");
+        sagaRegistry.set("Sandstorm:NeosApi:notifyOnPublishSaga", { saga: notifyOnPublishSaga });
       });
     }
   });

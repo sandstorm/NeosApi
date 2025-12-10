@@ -205,6 +205,13 @@ class TestingHelperCommandController extends CommandController
             ->buildUri();
     }
 
+    public function contentEditingUriWithNotifyOnPublishCommand(string $user, string $targetOrigin): string
+    {
+        return $this->getNeosApi()->ui->contentEditing(userName: $user)
+            ->notifyOnPublish($targetOrigin)
+            ->buildUri();
+    }
+
     public function contentEditingUriWithPreviewModeCommand(string $user, string $previewMode): string
     {
         $previewMode = PreviewMode::fromString($previewMode);
